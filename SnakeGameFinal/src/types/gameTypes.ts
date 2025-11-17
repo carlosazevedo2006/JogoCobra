@@ -1,6 +1,6 @@
 export type Position = [number, number];
-export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
-export type GameStatus = 'PLAYING' | 'GAME_OVER' | 'PAUSED';
+export type Direction = 'CIMA' | 'BAIXO' | 'ESQUERDA' | 'DIREITA';
+export type GameStatus = 'JOGANDO' | 'FIM_DE_JOGO' | 'PAUSADO';
 
 export interface GameState {
   snake: Position[];

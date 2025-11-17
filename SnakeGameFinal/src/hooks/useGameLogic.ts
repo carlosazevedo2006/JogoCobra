@@ -17,7 +17,7 @@ export const useGameLogic = (config: Partial<GameConfig> = {}) => {
     snake: INITIAL_SNAKE,
     food: [2, 2],
     direction: INITIAL_DIRECTION,
-    status: 'PLAYING',
+    status: 'JOGANDO',
     score: 0,
     highScore: 0,
     speed: mergedConfig.initialSpeed
@@ -57,14 +57,14 @@ export const useGameLogic = (config: Partial<GameConfig> = {}) => {
     updateDirection();
     
     setGameState(prev => {
-      if (prev.status !== 'PLAYING') return prev;
+      if (prev.status !== 'JOGANDO') return prev;
 
       const head = prev.snake[0];
       const newHead = getNextHeadPosition(head, nextDirection);
       const hasEaten = checkFoodCollision(newHead, prev.food);
 
       if (checkCollision(newHead, mergedConfig.boardSize, prev.snake)) {
-        return { ...prev, status: 'GAME_OVER' };
+        return { ...prev, status: 'FIM_DE_JOGO' };
       }
 
       const newSnake = [newHead, ...prev.snake];
@@ -79,7 +79,8 @@ export const useGameLogic = (config: Partial<GameConfig> = {}) => {
       if (hasEaten) {
         newFood = generateRandomPosition(mergedConfig.boardSize, newSnake);
         newScore = prev.score + 1;
-        newSpeed = Math.max(prev.speed - mergedConfig.speedIncrement, 50);
+        // Velocidade mínima de 100ms (mais tempo para pensar)
+        newSpeed = Math.max(prev.speed - mergedConfig.speedIncrement, 100);
       }
 
       return {
@@ -103,7 +104,7 @@ export const useGameLogic = (config: Partial<GameConfig> = {}) => {
         snake: initialSnake,
         food: initialFood,
         direction: INITIAL_DIRECTION,
-        status: 'PLAYING',
+        status: 'JOGANDO',
         score: 0,
         highScore: storedHighScore ? parseInt(storedHighScore) : 0,
         speed: mergedConfig.initialSpeed
@@ -113,7 +114,7 @@ export const useGameLogic = (config: Partial<GameConfig> = {}) => {
         snake: initialSnake,
         food: initialFood,
         direction: INITIAL_DIRECTION,
-        status: 'PLAYING',
+        status: 'JOGANDO',
         score: 0,
         highScore: 0,
         speed: mergedConfig.initialSpeed
@@ -126,13 +127,13 @@ export const useGameLogic = (config: Partial<GameConfig> = {}) => {
   const pauseGame = useCallback(() => {
     setGameState(prev => ({
       ...prev,
-      status: prev.status === 'PLAYING' ? 'PAUSED' : 'PLAYING'
+      status: prev.status === 'JOGANDO' ? 'PAUSADO' : 'JOGANDO'
     }));
   }, []);
 
   useEffect(() => {
     const saveHighScore = async () => {
-      if (gameState.status === 'GAME_OVER' && gameState.score > gameState.highScore) {
+      if (gameState.status === 'FIM_DE_JOGO' && gameState.score > gameState.highScore) {
         try {
           await AsyncStorage.setItem('snakeHighScore', gameState.score.toString());
         } catch (error) {

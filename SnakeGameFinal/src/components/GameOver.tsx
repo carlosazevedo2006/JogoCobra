@@ -13,18 +13,18 @@ const GameOver: React.FC<GameOverProps> = ({ score, highScore, onRestart }) => {
   return (
     <View style={styles.overlay}>
       <View style={styles.content}>
-        <Text style={styles.title}>Game Over!</Text>
+        <Text style={styles.title}>Fim de Jogo!</Text>
         <Text style={styles.scoreText}>
-          Your score: <Text style={styles.scoreValue}>{score}</Text>
+          Sua pontuação: <Text style={styles.scoreValue}>{score}</Text>
         </Text>
         {isNewHighScore && (
           <View style={styles.highScoreContainer}>
-            <Text style={styles.highScoreText}>🎉 New High Score! 🎉</Text>
+            <Text style={styles.highScoreText}>🎉 Novo Recorde! 🎉</Text>
           </View>
         )}
-        <Text style={styles.highScoreText}>Best: {highScore}</Text>
+        <Text style={styles.highScoreText}>Melhor: {highScore}</Text>
         <TouchableOpacity style={styles.button} onPress={onRestart}>
-          <Text style={styles.buttonText}>Play Again</Text>
+          <Text style={styles.buttonText}>Jogar Novamente</Text>
         </TouchableOpacity>
       </View>
     </View>

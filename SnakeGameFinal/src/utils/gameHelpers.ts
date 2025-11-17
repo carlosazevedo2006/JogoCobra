@@ -16,10 +16,10 @@ export const generateRandomPosition = (boardSize: number, exclude: Position[] = 
 export const getNextHeadPosition = (head: Position, direction: Direction): Position => {
   const [x, y] = head;
   switch (direction) {
-    case 'UP': return [x, y - 1];
-    case 'DOWN': return [x, y + 1];
-    case 'LEFT': return [x - 1, y];
-    case 'RIGHT': return [x + 1, y];
+    case 'CIMA': return [x, y - 1];
+    case 'BAIXO': return [x, y + 1];
+    case 'ESQUERDA': return [x - 1, y];
+    case 'DIREITA': return [x + 1, y];
     default: return head;
   }
 };
@@ -40,10 +40,10 @@ export const checkFoodCollision = (head: Position, food: Position): boolean => {
 
 export const getOppositeDirection = (direction: Direction): Direction => {
   const opposites: Record<Direction, Direction> = {
-    'UP': 'DOWN',
-    'DOWN': 'UP',
-    'LEFT': 'RIGHT',
-    'RIGHT': 'LEFT'
+    'CIMA': 'BAIXO',
+    'BAIXO': 'CIMA',
+    'ESQUERDA': 'DIREITA',
+    'DIREITA': 'ESQUERDA'
   };
   return opposites[direction];
 };

@@ -8,21 +8,24 @@ interface GameStatusProps {
 }
 
 const GameStatus: React.FC<GameStatusProps> = ({ score, highScore, speed }) => {
+  // Velocidade mais intuitiva: número maior = mais rápido
+  const displaySpeed = Math.round((300 - speed) / 10);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🐍 Snake Game</Text>
+      <Text style={styles.title}>🐍 Jogo da Cobrinha</Text>
       <View style={styles.statsContainer}>
         <View style={styles.stat}>
-          <Text style={styles.statLabel}>Score:</Text>
+          <Text style={styles.statLabel}>Pontuação:</Text>
           <Text style={styles.statValue}>{score}</Text>
         </View>
         <View style={styles.stat}>
-          <Text style={styles.statLabel}>High Score:</Text>
+          <Text style={styles.statLabel}>Recorde:</Text>
           <Text style={styles.statValue}>{highScore}</Text>
         </View>
         <View style={styles.stat}>
-          <Text style={styles.statLabel}>Speed:</Text>
-          <Text style={styles.statValue}>{Math.round((200 - speed) / 2)}</Text>
+          <Text style={styles.statLabel}>Velocidade:</Text>
+          <Text style={styles.statValue}>{displaySpeed}</Text>
         </View>
       </View>
     </View>

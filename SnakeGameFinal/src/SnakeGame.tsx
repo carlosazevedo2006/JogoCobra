@@ -17,10 +17,10 @@ const SnakeGame: React.FC = () => {
     config
   } = useGameLogic();
 
-  useGameInterval(moveSnake, gameState.status === 'PLAYING' ? gameState.speed : null);
+  useGameInterval(moveSnake, gameState.status === 'JOGANDO' ? gameState.speed : null);
 
   const handleBackPress = useCallback(() => {
-    if (gameState.status === 'PLAYING') {
+    if (gameState.status === 'JOGANDO') {
       Alert.alert(
         'Sair do Jogo',
         'Tem certeza que deseja sair? Seu progresso será perdido.',
@@ -63,10 +63,10 @@ const SnakeGame: React.FC = () => {
         onDirectionChange={changeDirection}
         onPause={pauseGame}
         onRestart={startGame}
-        isPlaying={gameState.status === 'PLAYING'}
+        isPlaying={gameState.status === 'JOGANDO'}
       />
 
-      {gameState.status === 'GAME_OVER' && (
+      {gameState.status === 'FIM_DE_JOGO' && (
         <GameOver
           score={gameState.score}
           highScore={gameState.highScore}
@@ -74,12 +74,15 @@ const SnakeGame: React.FC = () => {
         />
       )}
 
-      {gameState.status === 'PAUSED' && (
+      {gameState.status === 'PAUSADO' && (
         <View style={styles.pauseOverlay}>
           <View style={styles.pauseContent}>
             <Text style={styles.pauseText}>Jogo Pausado</Text>
             <Text style={styles.pauseSubtext}>
-              Toque em "Resume" para continuar
+              Toque em "Continuar" para voltar
+            </Text>
+            <Text style={styles.pauseHint}>
+              Use este tempo para planejar seus próximos movimentos!
             </Text>
           </View>
         </View>
@@ -110,6 +113,7 @@ const styles = StyleSheet.create({
     padding: 25,
     borderRadius: 15,
     alignItems: 'center',
+    margin: 20,
   },
   pauseText: {
     fontSize: 28,
@@ -121,6 +125,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+    marginBottom: 15,
+  },
+  pauseHint: {
+    fontSize: 14,
+    color: '#4CAF50',
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 });
 

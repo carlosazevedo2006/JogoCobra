@@ -19,16 +19,21 @@ const Controls: React.FC<ControlsProps> = ({
     <View style={styles.container}>
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.button} onPress={onPause}>
-          <Text style={styles.buttonText}>{isPlaying ? '⏸️ Pause' : '▶️ Resume'}</Text>
+          <Text style={styles.buttonText}>
+            {isPlaying ? '⏸️ Pausar' : '▶️ Continuar'}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={onRestart}>
-          <Text style={styles.buttonText}>🔄 Restart</Text>
+          <Text style={styles.buttonText}>🔄 Reiniciar</Text>
         </TouchableOpacity>
       </View>
       
       <View style={styles.instructions}>
         <Text style={styles.instructionsText}>
           Use os botões abaixo para controlar a cobra
+        </Text>
+        <Text style={styles.hintText}>
+          Dica: Planeje seus movimentos!
         </Text>
       </View>
 
@@ -37,7 +42,7 @@ const Controls: React.FC<ControlsProps> = ({
           <View style={styles.placeholder} />
           <TouchableOpacity 
             style={styles.directionButton} 
-            onPress={() => onDirectionChange('UP')}
+            onPress={() => onDirectionChange('CIMA')}
           >
             <Text style={styles.directionText}>↑</Text>
           </TouchableOpacity>
@@ -47,14 +52,14 @@ const Controls: React.FC<ControlsProps> = ({
         <View style={styles.directionRow}>
           <TouchableOpacity 
             style={styles.directionButton} 
-            onPress={() => onDirectionChange('LEFT')}
+            onPress={() => onDirectionChange('ESQUERDA')}
           >
             <Text style={styles.directionText}>←</Text>
           </TouchableOpacity>
           <View style={styles.placeholder} />
           <TouchableOpacity 
             style={styles.directionButton} 
-            onPress={() => onDirectionChange('RIGHT')}
+            onPress={() => onDirectionChange('DIREITA')}
           >
             <Text style={styles.directionText}>→</Text>
           </TouchableOpacity>
@@ -64,7 +69,7 @@ const Controls: React.FC<ControlsProps> = ({
           <View style={styles.placeholder} />
           <TouchableOpacity 
             style={styles.directionButton} 
-            onPress={() => onDirectionChange('DOWN')}
+            onPress={() => onDirectionChange('BAIXO')}
           >
             <Text style={styles.directionText}>↓</Text>
           </TouchableOpacity>
@@ -105,11 +110,19 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#f8f8f8',
     borderRadius: 8,
+    alignItems: 'center',
   },
   instructionsText: {
     textAlign: 'center',
     color: '#666',
     fontSize: 14,
+    marginBottom: 4,
+  },
+  hintText: {
+    textAlign: 'center',
+    color: '#4CAF50',
+    fontSize: 12,
+    fontStyle: 'italic',
   },
   directionPad: {
     backgroundColor: '#ffffff',
