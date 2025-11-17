@@ -16,7 +16,6 @@ const Controls: React.FC<ControlsProps> = ({
   isPlaying
 }) => {
   return (
-    // REMOVA O GestureHandlerRootView e Swipeable temporariamente
     <View style={styles.container}>
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.button} onPress={onPause}>
@@ -27,12 +26,13 @@ const Controls: React.FC<ControlsProps> = ({
         </TouchableOpacity>
       </View>
       
-      {/* ÁREA DE CONTROLES DIRECIONAIS SIMPLES */}
-      <View style={styles.directionPad}>
-        <Text style={styles.instructions}>
+      <View style={styles.instructions}>
+        <Text style={styles.instructionsText}>
           Use os botões abaixo para controlar a cobra
         </Text>
-        
+      </View>
+
+      <View style={styles.directionPad}>
         <View style={styles.directionRow}>
           <View style={styles.placeholder} />
           <TouchableOpacity 
@@ -83,71 +83,61 @@ const styles = StyleSheet.create({
   },
   buttonRow: {
     flexDirection: 'row',
-    marginBottom: 25,
+    marginBottom: 20,
     justifyContent: 'center',
   },
   button: {
     backgroundColor: '#007AFF',
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 12,
-    marginHorizontal: 8,
-    minWidth: 120,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: 8,
+    marginHorizontal: 10,
+    minWidth: 100,
   },
   buttonText: {
     color: 'white',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   instructions: {
+    marginBottom: 20,
+    padding: 10,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 8,
+  },
+  instructionsText: {
     textAlign: 'center',
     color: '#666',
     fontSize: 14,
-    marginBottom: 15,
   },
   directionPad: {
     backgroundColor: '#ffffff',
-    padding: 20,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
+    padding: 15,
+    borderRadius: 15,
   },
   directionRow: {
     flexDirection: 'row',
     justifyContent: 'center',
   },
   directionButton: {
-    width: 64,
-    height: 64,
+    width: 60,
+    height: 60,
     backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 32,
-    margin: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    borderRadius: 30,
+    margin: 5,
   },
   directionText: {
-    fontSize: 28,
+    fontSize: 24,
     color: '#333',
     fontWeight: 'bold',
   },
   placeholder: {
-    width: 64,
-    height: 64,
-    margin: 6,
+    width: 60,
+    height: 60,
+    margin: 5,
   },
 });
 

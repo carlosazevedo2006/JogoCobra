@@ -2,76 +2,61 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 interface GameStatusProps {
-  score: number;      // Pontuação atual
-  highScore: number;  // Melhor pontuação
-  speed: number;      // Velocidade atual (intervalo em ms)
+  score: number;
+  highScore: number;
+  speed: number;
 }
 
-/**
- * Componente que exibe informações do jogo: pontuação, recorde, velocidade
- */
-const GameStatus: React.FC<GameStatusProps> = ({ 
-  score, 
-  highScore, 
-  speed 
-}) => {
+const GameStatus: React.FC<GameStatusProps> = ({ score, highScore, speed }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Snake Game</Text>
+      <Text style={styles.title}>🐍 Snake Game</Text>
       <View style={styles.statsContainer}>
-        {/* Pontuação atual */}
         <View style={styles.stat}>
           <Text style={styles.statLabel}>Score:</Text>
           <Text style={styles.statValue}>{score}</Text>
         </View>
-        
-        {/* Recorde pessoal */}
         <View style={styles.stat}>
           <Text style={styles.statLabel}>High Score:</Text>
           <Text style={styles.statValue}>{highScore}</Text>
         </View>
-        
-        {/* Velocidade (convertida para valor mais amigável) */}
         <View style={styles.stat}>
           <Text style={styles.statLabel}>Speed:</Text>
-          <Text style={styles.statValue}>
-            {Math.round((200 - speed) / 2)} {/* Converte para escala 0-100 */}
-          </Text>
+          <Text style={styles.statValue}>{Math.round((200 - speed) / 2)}</Text>
         </View>
       </View>
     </View>
   );
 };
 
-// Estilos usando StyleSheet do React Native
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',          // Centraliza horizontalmente
-    marginBottom: 20,              // Espaço abaixo do componente
+    alignItems: 'center',
+    marginBottom: 20,
   },
   title: {
-    fontSize: 24,                  // Tamanho grande para título
-    fontWeight: 'bold',            // Negrito
-    marginBottom: 10,              // Espaço abaixo do título
-    color: '#333',                 // Cor escura para contraste
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
   },
   statsContainer: {
-    flexDirection: 'row',          // Itens em linha horizontal
-    justifyContent: 'space-around', // Espaço igual entre itens
-    width: '100%',                 // Ocupa largura total
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
   },
   stat: {
-    alignItems: 'center',          // Centraliza label e valor
+    alignItems: 'center',
   },
   statLabel: {
-    fontSize: 14,                  // Tamanho menor para labels
-    color: '#666',                 // Cor mais suave
-    marginBottom: 4,               // Espaço entre label e valor
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
   },
   statValue: {
-    fontSize: 18,                  // Tamanho maior para valores
-    fontWeight: 'bold',            // Negrito para destaque
-    color: '#333',                 // Cor escura
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
   },
 });
 
