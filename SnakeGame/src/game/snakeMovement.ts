@@ -1,23 +1,21 @@
 import { Snake, Direction } from './types';
-import { GameUtils } from './utils';
+import { getNextPosition, getOppositeDirection } from './utils';
 
-export class SnakeMovement {
-  static move(snake: Snake, grow: boolean): Snake {
-    const head = snake.body[0];
-    const newHead = GameUtils.getNextPosition(head, snake.direction);
-    const newBody = [newHead, ...snake.body];
-    
-    if (!grow) {
-      newBody.pop();
-    }
-
-    return { ...snake, body: newBody };
+export const moveSnake = (snake: Snake, grow: boolean): Snake => {
+  const head = snake.body[0];
+  const newHead = getNextPosition(head, snake.direction);
+  const newBody = [newHead, ...snake.body];
+  
+  if (!grow) {
+    newBody.pop();
   }
 
-  static changeDirection(snake: Snake, newDirection: Direction): Snake {
-    if (newDirection === GameUtils.getOppositeDirection(snake.direction)) {
-      return snake;
-    }
-    return { ...snake, direction: newDirection };
+  return { ...snake, body: newBody };
+};
+
+export const changeDirection = (snake: Snake, newDirection: Direction): Snake => {
+  if (newDirection === getOppositeDirection(snake.direction)) {
+    return snake;
   }
-}
+  return { ...snake, direction: newDirection };
+};

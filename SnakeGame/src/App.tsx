@@ -7,17 +7,16 @@ import {
 } from 'react-native';
 import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
 
-// Importações
+// Importações ATUALIZADAS
 import { GameConfig, Snake, Position, Direction, GameState } from './game/types';
 import { DEFAULT_CONFIG } from './game/constants';
-import { GameUtils } from './game/utils';
-import { SnakeMovement } from './game/snakeMovement';
-import { FoodGenerator } from './game/foodGenerator';
-import { GameEngine } from './game/gameEngine';
-import { ScoreManager } from './game/scoreManager';
+import { changeDirection } from './game/snakeMovement';
+import { generateFood } from './game/foodGenerator';
+import { processPlayerMove, processAIMove, checkGameOver } from './game/gameEngine';
+import { loadHighScore, saveHighScore } from './game/scoreManager';
 import { Board } from './components/Board';
 import { SettingsPanel } from './components/SettingsPanel';
-import { styles } from './styles';
+import { styles } from './styles/styles';
 
 export default function SnakeGame() {
   const [config, setConfig] = useState<GameConfig>(DEFAULT_CONFIG);
@@ -44,11 +43,11 @@ export default function SnakeGame() {
   const [speed, setSpeed] = useState(config.initialSpeed);
   const [foodEffect, setFoodEffect] = useState<Position | null>(null);
 
-  const gameLoopRef = useRef<NodeJS.Timeout>();
+  const gameLoopRef = useRef<any>(null);
 
   // Carregar high score
   useEffect(() => {
-    ScoreManager.loadHighScore().then(setHighScore);
+    loadHighScore().then(setHighScore);
   }, []);
 
   // Atualizar cor da cobra
@@ -60,7 +59,7 @@ export default function SnakeGame() {
   useEffect(() => {
     if (score > highScore) {
       setHighScore(score);
-      ScoreManager.saveHighScore(score);
+      saveHighScore(score);
     }
   }, [score, highScore]);
 
@@ -81,7 +80,7 @@ export default function SnakeGame() {
       }
 
       if (newDir) {
-        setPlayerSnake(prev => SnakeMovement.changeDirection(prev, newDir as Direction));
+        setPlayerSnake(prev => changeDirection(prev, newDir as Direction));
       }
     });
 
@@ -91,7 +90,7 @@ export default function SnakeGame() {
 
     setPlayerSnake(prevPlayer => {
       setAiSnake(prevAi => {
-        const { newPlayer, ateFood, collision } = GameEngine.processPlayerMove(
+        const { newPlayer, ateFood, collision } = processPlayerMove(
           prevPlayer,
           food,
           config.gridSize
@@ -107,17 +106,17 @@ export default function SnakeGame() {
           setFoodEffect(food);
           setTimeout(() => setFoodEffect(null), 300);
           
-          const newAiBeforeFood = GameEngine.processAIMove(prevAi, food, config.gridSize);
-          setFood(FoodGenerator.generate(config.gridSize, [newPlayer, newAiBeforeFood]));
+          const newAiBeforeFood = processAIMove(prevAi, food, config.gridSize);
+          setFood(generateFood(config.gridSize, [newPlayer, newAiBeforeFood]));
           
           if (config.speedIncrease) {
             setSpeed(s => Math.max(50, s - 5));
           }
         }
 
-        const newAi = GameEngine.processAIMove(prevAi, food, config.gridSize);
+        const newAi = processAIMove(prevAi, food, config.gridSize);
 
-        if (GameEngine.checkGameOver(newPlayer, newAi)) {
+        if (checkGameOver(newPlayer, newAi)) {
           setGameState('gameover');
         }
 
@@ -160,7 +159,7 @@ export default function SnakeGame() {
 
     setPlayerSnake(newPlayerSnake);
     setAiSnake(newAiSnake);
-    setFood(FoodGenerator.generate(config.gridSize, [newPlayerSnake, newAiSnake]));
+    setFood(generateFood(config.gridSize, [newPlayerSnake, newAiSnake]));
     setScore(0);
     setSpeed(config.initialSpeed);
     setGameState('playing');
@@ -176,7 +175,7 @@ export default function SnakeGame() {
 
   const handleDirectionPress = (dir: Direction) => {
     if (gameState === 'playing') {
-      setPlayerSnake(prev => SnakeMovement.changeDirection(prev, dir));
+      setPlayerSnake(prev => changeDirection(prev, dir));
     }
   };
 

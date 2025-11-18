@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { Position, Snake } from '../game/types';
-import { GameUtils } from '../game/utils';
+import { positionsEqual, positionToString } from '../game/utils';
 
 interface BoardProps {
   gridSize: number;
@@ -24,21 +24,21 @@ export const Board: React.FC<BoardProps> = ({
   const cellSize = Math.min((screenWidth - 40) / gridSize, 40);
   const boardSize = cellSize * gridSize;
 
-  const playerPositions = new Set(playerSnake.body.map(GameUtils.positionToString));
-  const aiPositions = new Set(aiSnake.body.map(GameUtils.positionToString));
+  const playerPositions = new Set(playerSnake.body.map(positionToString));
+  const aiPositions = new Set(aiSnake.body.map(positionToString));
   const playerHead = playerSnake.body[0];
   const aiHead = aiSnake.body[0];
 
   const cells = [];
   for (let y = 0; y < gridSize; y++) {
     for (let x = 0; x < gridSize; x++) {
-      const key = GameUtils.positionToString({ x, y });
+      const key = positionToString({ x, y });
       const isPlayerSnake = playerPositions.has(key);
       const isAiSnake = aiPositions.has(key);
-      const isFood = GameUtils.positionsEqual(food, { x, y });
-      const isFoodEffect = foodEffect && GameUtils.positionsEqual(foodEffect, { x, y });
-      const isPlayerHead = GameUtils.positionsEqual(playerHead, { x, y });
-      const isAiHead = GameUtils.positionsEqual(aiHead, { x, y });
+      const isFood = positionsEqual(food, { x, y });
+      const isFoodEffect = foodEffect && positionsEqual(foodEffect, { x, y });
+      const isPlayerHead = positionsEqual(playerHead, { x, y });
+      const isAiHead = positionsEqual(aiHead, { x, y });
 
       let backgroundColor = boardColor;
       if (isPlayerSnake) backgroundColor = playerSnake.color;

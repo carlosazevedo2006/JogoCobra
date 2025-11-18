@@ -1,5 +1,11 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  ScrollView, 
+  StyleSheet 
+} from 'react-native';
 import { GameConfig } from '../game/types';
 
 interface SettingsPanelProps {
@@ -8,7 +14,11 @@ interface SettingsPanelProps {
   onClose: () => void;
 }
 
-export const SettingsPanel: React.FC<SettingsPanelProps> = ({ config, onConfigChange, onClose }) => {
+export const SettingsPanel: React.FC<SettingsPanelProps> = ({ 
+  config, 
+  onConfigChange, 
+  onClose 
+}) => {
   const colorOptions = [
     { name: 'Verde', value: '#10b981' },
     { name: 'Azul', value: '#3b82f6' },

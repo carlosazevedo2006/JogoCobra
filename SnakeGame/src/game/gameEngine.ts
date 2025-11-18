@@ -1,41 +1,39 @@
 import { Snake, Position } from './types';
-import { SnakeMovement } from './snakeMovement';
-import { AIController } from './aiController';
-import { CollisionDetector } from './collision';
-import { GameUtils } from './utils';
+import { moveSnake, changeDirection } from './snakeMovement';
+import { getNextDirection } from './aiController';
+import { checkWallCollision, checkSelfCollision, checkSnakeCollision } from './collision';
+import { getNextPosition, positionsEqual } from './utils';
 
-export class GameEngine {
-  static processPlayerMove(
-    player: Snake,
-    food: Position,
-    gridSize: number
-  ): { newPlayer: Snake; ateFood: boolean; collision: boolean } {
-    const head = player.body[0];
-    const newHead = GameUtils.getNextPosition(head, player.direction);
+export const processPlayerMove = (
+  player: Snake,
+  food: Position,
+  gridSize: number
+): { newPlayer: Snake; ateFood: boolean; collision: boolean } => {
+  const head = player.body[0];
+  const newHead = getNextPosition(head, player.direction);
 
-    if (
-      CollisionDetector.checkWallCollision(newHead, gridSize) ||
-      CollisionDetector.checkSelfCollision(newHead, player.body.slice(1))
-    ) {
-      return { newPlayer: player, ateFood: false, collision: true };
-    }
-
-    const ateFood = GameUtils.positionsEqual(newHead, food);
-    const newPlayer = SnakeMovement.move(player, ateFood);
-
-    return { newPlayer, ateFood, collision: false };
+  if (
+    checkWallCollision(newHead, gridSize) ||
+    checkSelfCollision(newHead, player.body.slice(1))
+  ) {
+    return { newPlayer: player, ateFood: false, collision: true };
   }
 
-  static processAIMove(ai: Snake, food: Position, gridSize: number): Snake {
-    const newDirection = AIController.getNextDirection(ai, food, gridSize);
-    const updatedAI = { ...ai, direction: newDirection };
-    return SnakeMovement.move(updatedAI, false);
-  }
+  const ateFood = positionsEqual(newHead, food);
+  const newPlayer = moveSnake(player, ateFood);
 
-  static checkGameOver(player: Snake, ai: Snake): boolean {
-    return (
-      CollisionDetector.checkSnakeCollision(player, ai) ||
-      CollisionDetector.checkSnakeCollision(ai, player)
-    );
-  }
-}
+  return { newPlayer, ateFood, collision: false };
+};
+
+export const processAIMove = (ai: Snake, food: Position, gridSize: number): Snake => {
+  const newDirection = getNextDirection(ai, food, gridSize);
+  const updatedAI = { ...ai, direction: newDirection };
+  return moveSnake(updatedAI, false);
+};
+
+export const checkGameOver = (player: Snake, ai: Snake): boolean => {
+  return (
+    checkSnakeCollision(player, ai) ||
+    checkSnakeCollision(ai, player)
+  );
+};
