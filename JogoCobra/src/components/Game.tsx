@@ -7,9 +7,10 @@ import {
   PanResponder,
   Animated,
   Easing,
-  Image,
   TouchableOpacity,
+  Image,
 } from "react-native";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Posicao } from "../types/types";
@@ -17,24 +18,30 @@ import { GRID_SIZE, CELULA, DIRECOES, gerarComida, igual } from "../utils/consta
 import Controls from "./Controls";
 
 const STORAGE_KEY = "@JogoCobra_melhorPontuacao";
-const MOVE_INTERVAL_MS = 150; // intervalo mais rápido para resposta imediata
+const MOVE_INTERVAL_MS = 300; // velocidade constante
+
+// Helper para converter posição em pixels
+const posToPixels = (pos: Posicao) => ({ left: pos.x * CELULA, top: pos.y * CELULA });
 
 export default function Game() {
   const [cobra, setCobra] = useState<Posicao[]>([{ x: 5, y: 5 }]);
   const [direcao, setDirecao] = useState<Posicao>(DIRECOES.DIREITA);
   const [comida, setComida] = useState<Posicao>(() => gerarComida([{ x: 5, y: 5 }]));
-  const [pontos, setPontos] = useState<number>(0);
-  const [melhor, setMelhor] = useState<number>(0);
-  const [gameOver, setGameOver] = useState<boolean>(false);
+  const [pontos, setPontos] = useState(0);
+  const [melhor, setMelhor] = useState(0);
+  const [gameOver, setGameOver] = useState(false);
+  const [jogando, setJogando] = useState(false);
 
-  const intervalRef = useRef<number | null>(null);
-  const latestDirRef = useRef<Posicao>(direcao);
+  const latestDirRef = useRef(direcao);
   const eatAnim = useRef(new Animated.Value(1)).current;
+  const lastTimeRef = useRef<number>(0);
+  const rafRef = useRef<number | null>(null);
+
+  // Animations para cada segmento
+  const animSegments = useRef<Animated.ValueXY[]>([new Animated.ValueXY(posToPixels({ x: 5, y: 5 }))]);
 
   useEffect(() => {
     carregarMelhor();
-    startLoop();
-    return () => stopLoop();
   }, []);
 
   useEffect(() => {
@@ -50,25 +57,24 @@ export default function Game() {
     await AsyncStorage.setItem(STORAGE_KEY, String(novo));
   }
 
-  function startLoop() {
-    stopLoop();
-    intervalRef.current = setInterval(step, MOVE_INTERVAL_MS) as unknown as number;
-  }
+  // Loop principal
+  const loop = (timestamp?: number) => {
+    if (!lastTimeRef.current) lastTimeRef.current = timestamp || 0;
+    const delta = (timestamp || 0) - lastTimeRef.current;
 
-  function stopLoop() {
-    if (intervalRef.current !== null) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+    if (delta >= MOVE_INTERVAL_MS && jogando) {
+      step();
+      lastTimeRef.current = timestamp || 0;
     }
-  }
+    rafRef.current = requestAnimationFrame(loop);
+  };
 
-  // aplica nova direção imediatamente
-  function requestDirecao(nova: Posicao) {
-    const atual = latestDirRef.current;
-    if (nova.x === -atual.x && nova.y === -atual.y) return;
-    setDirecao(nova);
-    latestDirRef.current = nova;
-  }
+  useEffect(() => {
+    rafRef.current = requestAnimationFrame(loop);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [jogando]);
 
   function step() {
     setCobra((prev) => {
@@ -88,6 +94,7 @@ export default function Game() {
 
       let novaCobra = [novaHead, ...prev];
 
+      // Comer comida
       if (igual(novaHead, comida)) {
         setPontos((p) => {
           const np = p + 1;
@@ -103,19 +110,40 @@ export default function Game() {
           Animated.timing(eatAnim, { toValue: 1, duration: 180, easing: Easing.out(Easing.quad), useNativeDriver: true }),
         ]).start();
 
-        const next = gerarComida(novaCobra);
-        setComida(next);
+        setComida(gerarComida(novaCobra));
       } else {
         novaCobra.pop();
       }
+
+      // Atualiza animações dos segmentos
+      // Garantir que animSegments tenha o mesmo tamanho que a cobra
+      while (animSegments.current.length < novaCobra.length) {
+        animSegments.current.push(new Animated.ValueXY(posToPixels(novaCobra[animSegments.current.length])));
+      }
+
+      novaCobra.forEach((seg, idx) => {
+        Animated.timing(animSegments.current[idx], {
+          toValue: posToPixels(seg),
+          duration: MOVE_INTERVAL_MS,
+          easing: Easing.linear,
+          useNativeDriver: false,
+        }).start();
+      });
 
       return novaCobra;
     });
   }
 
+  function requestDirecao(nova: Posicao) {
+    const atual = latestDirRef.current;
+    if (nova.x === -atual.x && nova.y === -atual.y) return; // não inverte
+    latestDirRef.current = nova;
+    setDirecao(nova);
+  }
+
   function acabarJogo() {
-    stopLoop();
     setGameOver(true);
+    setJogando(false);
   }
 
   function reiniciar() {
@@ -125,7 +153,10 @@ export default function Game() {
     setComida(gerarComida([{ x: 5, y: 5 }]));
     setPontos(0);
     setGameOver(false);
-    startLoop();
+    setJogando(true);
+
+    // Reset anim segments
+    animSegments.current = [new Animated.ValueXY(posToPixels({ x: 5, y: 5 }))];
   }
 
   // Swipe
@@ -147,17 +178,37 @@ export default function Game() {
     })
   ).current;
 
-  const winW = Math.min(Dimensions.get("window").width, 520);
-  const boardSize = CELULA * GRID_SIZE;
-  const offsetX = Math.floor((winW - boardSize) / 2);
-
   let appleImg: any = null;
   try {
     appleImg = require("../../assets/apple.png");
-  } catch {
-    appleImg = null;
+  } catch {}
+
+  // Tela inicial
+  if (!jogando && !gameOver) {
+    return (
+      <View style={styles.root}>
+        <Text style={styles.title}>JogoCobra — SNAKE (PT)</Text>
+        <TouchableOpacity style={styles.reiniciarBtn} onPress={() => setJogando(true)}>
+          <Text style={styles.actionText}>PLAY</Text>
+        </TouchableOpacity>
+      </View>
+    );
   }
 
+  // Tela game over
+  if (gameOver) {
+    return (
+      <View style={styles.root}>
+        <Text style={styles.title}>GAME OVER</Text>
+        <Text style={styles.score}>Pontuação: {pontos}</Text>
+        <TouchableOpacity style={styles.reiniciarBtn} onPress={reiniciar}>
+          <Text style={styles.actionText}>REINICIAR</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // Tela do jogo
   return (
     <View style={styles.root} {...pan.panHandlers}>
       <Text style={styles.title}>JogoCobra — SNAKE (PT)</Text>
@@ -166,19 +217,15 @@ export default function Game() {
         <Text style={styles.score}>Melhor: {melhor}</Text>
       </View>
 
-      <View style={[styles.boardWrapper, { width: boardSize, height: boardSize, left: offsetX }]}>
-        <View style={[styles.board, { width: boardSize, height: boardSize }]}>
+      <View style={styles.boardWrapper}>
+        <View style={styles.board}>
           {cobra.map((seg, idx) => {
             const isHead = idx === 0;
-            const left = seg.x * CELULA;
-            const top = seg.y * CELULA;
+            const animStyle = animSegments.current[idx]?.getLayout();
             return (
-              <View
+              <Animated.View
                 key={`seg-${idx}-${seg.x}-${seg.y}`}
-                style={[
-                  styles.segment,
-                  { width: CELULA - 2, height: CELULA - 2, left, top, backgroundColor: isHead ? "#1b5e20" : "#43a047" },
-                ]}
+                style={[styles.segment, { backgroundColor: isHead ? "#1b5e20" : "#43a047" }, animStyle]}
               />
             );
           })}
@@ -186,60 +233,29 @@ export default function Game() {
           {appleImg ? (
             <Animated.Image
               source={appleImg}
-              style={{
-                position: "absolute",
-                left: comida.x * CELULA,
-                top: comida.y * CELULA,
-                width: CELULA - 4,
-                height: CELULA - 4,
-                transform: [{ scale: eatAnim }],
-              }}
+              style={{ position: "absolute", left: comida.x * CELULA, top: comida.y * CELULA, width: CELULA - 4, height: CELULA - 4, transform: [{ scale: eatAnim }] }}
             />
           ) : (
             <Animated.View
-              style={{
-                position: "absolute",
-                left: comida.x * CELULA + 2,
-                top: comida.y * CELULA + 2,
-                width: CELULA - 6,
-                height: CELULA - 6,
-                borderRadius: 4,
-                backgroundColor: "#d32f2f",
-                transform: [{ scale: eatAnim }],
-              }}
+              style={{ position: "absolute", left: comida.x * CELULA + 2, top: comida.y * CELULA + 2, width: CELULA - 6, height: CELULA - 6, borderRadius: 4, backgroundColor: "#d32f2f", transform: [{ scale: eatAnim }] }}
             />
           )}
         </View>
       </View>
 
       <Controls onChangeDirecao={requestDirecao} />
-
-      <TouchableOpacity style={styles.reiniciarBtn} onPress={reiniciar}>
-        <Text style={styles.actionText}>{gameOver ? "Reiniciar" : "Reiniciar"}</Text>
-      </TouchableOpacity>
-
-      {gameOver && <Text style={styles.gameOver}>GAME OVER</Text>}
-      <Text style={styles.hint}>Sem diagonais — desliza (swipe) ou usa as setas</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { alignItems: "center", padding: 12, width: "100%" },
-  title: { fontSize: 20, color: "#fff", marginBottom: 8 },
+  root: { flex: 1, backgroundColor: "#222", alignItems: "center", justifyContent: "center" },
+  title: { fontSize: 28, color: "#fff", marginBottom: 20, textAlign: "center" },
   scoreRow: { width: "90%", flexDirection: "row", justifyContent: "space-between", marginBottom: 8 },
-  score: { color: "#fff", fontSize: 16 },
-  boardWrapper: { backgroundColor: "#fafafa", borderRadius: 8, overflow: "hidden", marginBottom: 12 },
-  board: { backgroundColor: "#fff", borderWidth: 1, borderColor: "#ddd", position: "relative" },
-  segment: { position: "absolute", alignItems: "center", justifyContent: "center" },
-  reiniciarBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    marginTop: 12,
-    borderRadius: 8,
-    backgroundColor: "#f57c00",
-  },
-  actionText: { color: "#fff", fontWeight: "600" },
-  gameOver: { color: "#ff5252", fontSize: 18, marginTop: 8 },
-  hint: { color: "#ddd", marginTop: 8, fontSize: 12 },
+  score: { color: "#fff", fontSize: 18 },
+  boardWrapper: { width: CELULA * GRID_SIZE, height: CELULA * GRID_SIZE, alignItems: "center", justifyContent: "center" },
+  board: { width: CELULA * GRID_SIZE, height: CELULA * GRID_SIZE, backgroundColor: "#fff", borderWidth: 1, borderColor: "#ddd", position: "relative" },
+  segment: { position: "absolute", width: CELULA - 2, height: CELULA - 2, borderRadius: 4 },
+  reiniciarBtn: { paddingHorizontal: 16, paddingVertical: 12, borderRadius: 8, backgroundColor: "#f57c00", marginTop: 12 },
+  actionText: { color: "#fff", fontWeight: "700", fontSize: 18 },
 });
