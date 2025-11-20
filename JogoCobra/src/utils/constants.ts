@@ -1,7 +1,7 @@
 // src/utils/constants.ts
 // Constantes e funções utilitárias do jogo
 
-import { Posicao } from "../types";
+import { Posicao } from "../types/types";
 
 // Dimensões do tabuleiro
 export const GRID_SIZE = 10; // 10x10 quadrículas
@@ -11,7 +11,7 @@ export const CELULA = 36;
 
 // Tempo entre movimentos (ms) — velocidade base constante.
 // Se quiseres activar o aumento de velocidade, ver Game.tsx (opção ENABLE_SPEEDUP)
-export const MOVE_INTERVAL_MS = 300;
+export const MOVE_INTERVAL_MS = 200;
 
 // Direções (vetores) — sem diagonais
 export const DIRECOES = {

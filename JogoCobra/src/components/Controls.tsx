@@ -4,7 +4,7 @@
 
 import React from "react";
 import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
-import { Posicao } from "../types";
+import { Posicao } from "../types/types";
 
 type Props = {
   onChangeDirecao: (nova: Posicao) => void;
