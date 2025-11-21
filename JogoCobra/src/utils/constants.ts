@@ -1,40 +1,33 @@
 // src/utils/constants.ts
-// Constantes e funções utilitárias do jogo
-
 import { Posicao } from "../types/types";
 
-// Dimensões do tabuleiro
-export const GRID_SIZE = 10; // 10x10 quadrículas
+// Tamanho do tabuleiro (12x12 quadrículas)
+export const GRID_SIZE = 12;
 
-// Tamanho visual de cada célula (podes ajustar conforme o ecrã)
-export const CELULA = 36;
+// Tamanho de cada célula em pixels
+export const CELULA = 30;
 
-// Tempo entre movimentos (ms) — velocidade base constante.
-// Se quiseres activar o aumento de velocidade, ver Game.tsx (opção ENABLE_SPEEDUP)
-export const MOVE_INTERVAL_MS = 200;
-
-// Direções (vetores) — sem diagonais
+// DIREÇÕES PERMITIDAS (sem diagonais)
 export const DIRECOES = {
   CIMA: { x: 0, y: -1 },
   BAIXO: { x: 0, y: 1 },
   ESQUERDA: { x: -1, y: 0 },
   DIREITA: { x: 1, y: 0 },
-} as const;
+};
 
-// Gera posição aleatória dentro do tabuleiro
-export function gerarComida(exclude: Posicao[] = []): Posicao {
-  const taken = new Set(exclude.map((p) => `${p.x},${p.y}`));
-  let tries = 0;
-  while (tries < 1000) {
-    const pos = { x: Math.floor(Math.random() * GRID_SIZE), y: Math.floor(Math.random() * GRID_SIZE) };
-    if (!taken.has(`${pos.x},${pos.y}`)) return pos;
-    tries++;
-  }
-  // fallback raro
-  return { x: 0, y: 0 };
+// Função para gerar posição aleatória da comida
+export function gerarComida(cobra: Posicao[]): Posicao {
+  let pos: Posicao;
+  do {
+    pos = {
+      x: Math.floor(Math.random() * GRID_SIZE),
+      y: Math.floor(Math.random() * GRID_SIZE),
+    };
+  } while (cobra.some((seg) => seg.x === pos.x && seg.y === pos.y));
+  return pos;
 }
 
-// comparação de posições
-export function igual(a: Posicao, b: Posicao) {
+// Função para comparar posições
+export function igual(a: Posicao, b: Posicao): boolean {
   return a.x === b.x && a.y === b.y;
 }
