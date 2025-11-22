@@ -221,7 +221,7 @@ export default function Game() {
         setJogando(true);
         lastTimeRef.current = 0;
       }
-    }, 1000);
+    }, 1350);
   }
 
   // Alterar cor da cobra
@@ -241,7 +241,7 @@ export default function Game() {
           <Text style={styles.settingsText}>⚙</Text>
         </TouchableOpacity>
 
-        <Text style={styles.title}>JogoCobra — SNAKE (PT)</Text>
+        <Text style={styles.title}> Jogo da Cobra </Text>
 
         <TouchableOpacity style={styles.playBtn} onPress={iniciarContagem}>
           <Text style={styles.playText}>PLAY</Text>
