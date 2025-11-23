@@ -1,19 +1,23 @@
 // App.tsx
-import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import Game from "./src/components/Game";
-import WelcomeScreen from "./src/screens/WelcomeScreen";
+// Ponto de entrada do projecto JogoCobra (Expo + TypeScript)
 
-const Stack = createNativeStackNavigator();
+import React from "react";
+import { SafeAreaView, StyleSheet } from "react-native";
+import Game from "./src/components/Game";
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Welcome" component={WelcomeScreen} />
-        <Stack.Screen name="Game" component={Game} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <SafeAreaView style={styles.container}>
+      <Game />
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#121212",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
