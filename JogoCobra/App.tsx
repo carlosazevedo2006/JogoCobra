@@ -3,7 +3,7 @@
 
 import React, { useState } from "react";
 import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from "react-native";
-import Game from "./src/components/Game";
+import Game from "./src/screens/Game";
 
 export default function App() {
   // modo é null --> mostra menu

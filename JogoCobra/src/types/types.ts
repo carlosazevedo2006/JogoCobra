@@ -1,7 +1,8 @@
-// src/types/index.ts
+// src/types.ts
 
-// Representa a posição de cada segmento da cobra e da comida
 export interface Posicao {
   x: number;
   y: number;
 }
+
+export type Modo = "FACIL" | "MEDIO" | "DIFICIL";
