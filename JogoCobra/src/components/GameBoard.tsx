@@ -6,9 +6,9 @@ import { CELULA } from "../utils/constants";
 export default function GameBoard({
   cobra,
   cobraInimiga,
+  enemyAnimSegments,   // <-- ADICIONADO
   comida,
   animSegments,
-  enemyAnimSegments,   // <-- ADICIONADO AQUI
   eatAnim,
   corCobra,
   modoSelecionado,
@@ -22,7 +22,6 @@ export default function GameBoard({
 
       {/* Main Grid */}
       <View style={styles.board}>
-
         {/* --- Comida (pixel) --- */}
         <Animated.View
           style={[
@@ -57,26 +56,21 @@ export default function GameBoard({
           );
         })}
 
-        {/* --- Cobra Inimiga (pixel) --- */}
-        {modoSelecionado === "DIFICIL" &&
-          cobraInimiga.map((seg: any, idx: number) => {
-            const enemyAnim = enemyAnimSegments[idx];   // <-- USO CORRETO DO ANIMADOR
+        {/* --- Cobra Inimiga (pixel) (AGORA SUAVE) --- */}
+        {modoSelecionado === "DIFICIL" && enemyAnimSegments?.current?.[0] && (
+          <Animated.View
+            style={[
+              styles.enemy,
+              {
+                transform: [
+                  { translateX: enemyAnimSegments.current[0].x },   // <-- ADICIONADO
+                  { translateY: enemyAnimSegments.current[0].y },   // <-- ADICIONADO
+                ],
+              },
+            ]}
+          />
+        )}
 
-            return (
-              <Animated.View
-                key={"enemy-" + idx}
-                style={[
-                  styles.enemy,
-                  enemyAnim && {
-                    transform: [
-                      { translateX: enemyAnim.x },
-                      { translateY: enemyAnim.y }
-                    ],
-                  },
-                ]}
-              />
-            );
-          })}
       </View>
     </View>
   );
@@ -97,7 +91,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  // Borda estilo CRT retro
   pixelBorder: {
     position: "absolute",
     top: -6,
@@ -114,14 +107,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#000",
   },
 
-  // Pixel quadrado da cobra
   snake: {
     width: CELULA,
     height: CELULA,
     backgroundColor: "#43a047",
   },
 
-  // Pixel quadrado da cobra inimiga
   enemy: {
     width: CELULA,
     height: CELULA,
@@ -129,7 +120,6 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
 
-  // Pixel quadrado da comida
   food: {
     width: CELULA,
     height: CELULA,

@@ -25,8 +25,6 @@ export default function Game() {
   const latestDirRef = useRef(DIRECOES.DIREITA);
   const eatAnim = useRef(new Animated.Value(1)).current;
   const animSegments = useRef<any[]>([]);
-  const enemyAnimSegments = useRef<any[]>([]);
-
 
   // Hook principal da cobra
   const {
@@ -53,14 +51,21 @@ export default function Game() {
     eatAnim,
     animSegments,
     modoSelecionado,
-    onGameOver: () => setGameOver(true),
+    onGameOver: () => {
+      setJogando(false);   // para o movimento
+      setGameOver(true);   // mostra tela de game over
+    },
   });
 
   // Hook inimigo (modo difícil)
   const { cobraInimiga, setCobraInimiga, moverCobraInimiga } = useEnemyMovement({
     modoSelecionado,
     cobra,
-    terminarJogo: () => setGameOver(true),
+    terminarJogo: () => {
+    setJogando(false);     // ← MUITO IMPORTANTE!
+    setGameOver(true);     
+    },
+
   });
 
   // Loop do jogo
@@ -92,45 +97,38 @@ export default function Game() {
   function reiniciar() {
     resetCobra();
     latestDirRef.current = DIRECOES.DIREITA;
-    setJogando(false);
     setCobraInimiga([{ x: 8, y: 8 }]);
     setPontos(0);
     setGameOver(false);
     iniciarContagem();
   }
 
-  
   // Swipe — TIPO 1 (clássico)
-const panResponder = useRef(
-  PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
 
-    onPanResponderRelease: (_evt, g) => {
-      const { dx, dy } = g;
+      onPanResponderRelease: (_evt, g) => {
+        const { dx, dy } = g;
 
-      // novo threshold mais seguro
-      const thresh = 14;
+        const thresh = 14;
 
-      const absX = Math.abs(dx);
-      const absY = Math.abs(dy);
+        const absX = Math.abs(dx);
+        const absY = Math.abs(dy);
 
-      // IGNORA movimentos fracos / toques rápidos
-      if (absX < thresh && absY < thresh) return;
+        if (absX < thresh && absY < thresh) return;
 
-      // detectar eixo dominante
-      if (absX > absY) {
-        // horizontal
-        if (dx > 0) requestDirecao(DIRECOES.DIREITA);
-        else requestDirecao(DIRECOES.ESQUERDA);
-      } else {
-        // vertical
-        if (dy > 0) requestDirecao(DIRECOES.BAIXO);
-        else requestDirecao(DIRECOES.CIMA);
-      }
-    },
-  })
-).current;
+        if (absX > absY) {
+          if (dx > 0) requestDirecao(DIRECOES.DIREITA);
+          else requestDirecao(DIRECOES.ESQUERDA);
+        } else {
+          if (dy > 0) requestDirecao(DIRECOES.BAIXO);
+          else requestDirecao(DIRECOES.CIMA);
+        }
+      },
+    })
+  ).current;
 
 
   // -----------------------------
@@ -150,18 +148,17 @@ const panResponder = useRef(
   if (showModeSelection) {
     return (
       <ModeSelectScreen
-      onSelect={(modo: Modo) => {
-      setModoSelecionado(modo);
+        onSelect={(modo: Modo) => {
+          setModoSelecionado(modo);
 
-    // 🔥 reset total ao estado da cobra ANTES da contagem             
-    setVelocidade(300);        
-    latestDirRef.current = DIRECOES.DIREITA;
-    setCobraInimiga([{ x: 8, y: 8 }]);
+          setVelocidade(300);        
+          latestDirRef.current = DIRECOES.DIREITA;
+          setCobraInimiga([{ x: 8, y: 8 }]);
 
-    setShowModeSelection(false);
-    iniciarContagem();
-    }}
-    />
+          setShowModeSelection(false);
+          iniciarContagem();
+        }}
+      />
     );
   }
 
@@ -187,23 +184,21 @@ const panResponder = useRef(
   return (
     <View style={styles.root}>
       <Text style={styles.scorePixel}>
-      {modoSelecionado} | {pontos} pts | REC {melhor}
+        {modoSelecionado} | {pontos} pts | REC {melhor}
       </Text>
 
-
       <GameBoard
-      cobra={cobra}
-       cobraInimiga={cobraInimiga}
-      comida={comida}
-     animSegments={animSegments.current}
-      enemyAnimSegments={enemyAnimSegments.current}   // <── ADICIONAR AQUI
-      eatAnim={eatAnim}
-     corCobra={corCobra}
-     modoSelecionado={modoSelecionado}
-      panHandlers={panResponder.panHandlers}
-      onRequestDirecao={requestDirecao}
+        cobra={cobra}
+        cobraInimiga={cobraInimiga}
+        comida={comida}
+        animSegments={animSegments.current}
+        eatAnim={eatAnim}
+        corCobra={corCobra}
+        modoSelecionado={modoSelecionado}
+        panHandlers={panResponder.panHandlers}
+        onRequestDirecao={requestDirecao}
       />
-      
+
       <Text style={styles.score}>
         Deslize para mover a cobra
       </Text>
@@ -224,4 +219,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
