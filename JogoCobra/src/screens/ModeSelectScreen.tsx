@@ -1,4 +1,3 @@
-// src/screens/ModeSelectScreen.tsx
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Modo } from "../types/types";
@@ -13,15 +12,15 @@ export default function ModeSelectionScreen({
       <Text style={styles.title}>Selecionar Modo</Text>
 
       <TouchableOpacity style={styles.btn} onPress={() => onSelect("FACIL")}>
-        <Text style={styles.btnText}>Fácil</Text>
+        <Text style={styles.btnText}>FÁCIL</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.btn} onPress={() => onSelect("MEDIO")}>
-        <Text style={styles.btnText}>Médio</Text>
+        <Text style={styles.btnText}>MÉDIO</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.btn} onPress={() => onSelect("DIFICIL")}>
-        <Text style={styles.btnText}>Difícil</Text>
+        <Text style={styles.btnText}>DIFÍCIL</Text>
       </TouchableOpacity>
     </View>
   );
@@ -34,23 +33,29 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+
   title: {
-    color: "#0f0",
-    fontSize: 36,
+    color: "#00ff66",
+    fontSize: 48,
     marginBottom: 40,
+    fontFamily: "VT323_400Regular",
+    letterSpacing: 2,
   },
+
   btn: {
-    backgroundColor: "#0f0",
-    paddingVertical: 14,
-    paddingHorizontal: 30,
-    borderRadius: 10,
-    marginVertical: 10,
-    width: 200,
-    alignItems: "center",
+    width: 220,
+    paddingVertical: 12,
+    backgroundColor: "#222",
+    borderColor: "#00ff66",
+    borderWidth: 3,
+    marginVertical: 12,
   },
+
   btnText: {
-    color: "#111",
-    fontSize: 20,
-    fontWeight: "bold",
+    color: "#00ff66",
+    fontSize: 32,
+    textAlign: "center",
+    fontFamily: "VT323_400Regular",
+    letterSpacing: 1,
   },
 });

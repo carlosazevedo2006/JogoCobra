@@ -1,122 +1,139 @@
 // src/components/GameBoard.tsx
 import React from "react";
-import { View, Animated, StyleSheet } from "react-native";
-import SnakeSegment from "./SnakeSegment";
-import EnemySnakeSegment from "./EnemySnakeSegment";
-import Food from "./Food";
-import { GRID_SIZE, CELULA } from "../utils/constants";
-import { Posicao } from "../types/types";
-
-interface GameBoardProps {
-  cobra: Posicao[];
-  cobraInimiga?: Posicao[];
-  comida: Posicao;
-  animSegments: Animated.ValueXY[];
-  eatAnim: Animated.Value;
-  corCobra: string;
-  modoSelecionado?: string | null;
-  panHandlers?: any;
-}
+import { View, StyleSheet, Animated } from "react-native";
+import { CELULA } from "../utils/constants";
 
 export default function GameBoard({
   cobra,
-  cobraInimiga = [],
+  cobraInimiga,
   comida,
-  animSegments = [],
+  animSegments,
+  enemyAnimSegments,   // <-- ADICIONADO AQUI
   eatAnim,
   corCobra,
-  modoSelecionado = null,
-  panHandlers = {},
-}: GameBoardProps) {
+  modoSelecionado,
+  panHandlers,
+}: any) {
   return (
-    <View style={styles.board} {...(panHandlers || {})}>
-      {/* Grid */}
-      {Array.from({ length: GRID_SIZE }).map((_, row) =>
-        Array.from({ length: GRID_SIZE }).map((_, col) => (
-          <View
-            key={`grid-${row}-${col}`}
-            style={{
-              position: "absolute",
-              width: CELULA,
-              height: CELULA,
-              left: col * CELULA,
-              top: row * CELULA,
-              borderWidth: 0.5,
-              borderColor: "#ddd",
-              borderStyle: "dashed",
-            }}
-          />
-        ))
-      )}
+    <View style={styles.wrapper} {...panHandlers}>
+      {/* Pixel Border */}
+      <View pointerEvents="none" style={styles.crtOverlay}/>
+      <View style={styles.pixelBorder} />
 
-      {/* Cobra do jogador — usa animSegments para suavidade */}
-      {cobra.map((seg, idx) => {
-        const anim = animSegments && animSegments[idx];
-        // usar Animated.View com transform via getTranslateTransform quando anim existe
-        if (anim && typeof anim.getTranslateTransform === "function") {
+      {/* Main Grid */}
+      <View style={styles.board}>
+
+        {/* --- Comida (pixel) --- */}
+        <Animated.View
+          style={[
+            styles.food,
+            {
+              transform: [
+                { translateX: comida.x * CELULA },
+                { translateY: comida.y * CELULA },
+                { scale: eatAnim },
+              ],
+            },
+          ]}
+        />
+
+        {/* --- Cobra (pixel) --- */}
+        {cobra.map((seg: any, i: number) => {
+          const anim = animSegments[i];
           return (
             <Animated.View
-              key={`seg-${idx}-${seg.x}-${seg.y}`}
+              key={i}
               style={[
-                styles.segment,
+                styles.snake,
                 { backgroundColor: corCobra },
-                { transform: anim.getTranslateTransform() },
+                anim && {
+                  transform: [
+                    { translateX: anim.x },
+                    { translateY: anim.y },
+                  ],
+                },
               ]}
             />
           );
-        } else {
-          // fallback estático
-          return (
-            <Animated.View
-              key={`seg-static-${idx}-${seg.x}-${seg.y}`}
-              style={[
-                styles.segment,
-                { backgroundColor: corCobra },
-                { left: seg.x * CELULA + 2, top: seg.y * CELULA + 2 },
-              ]}
-            />
-          );
-        }
-      })}
+        })}
 
-      {/* Cobra inimiga (modo difícil) */}
-      {modoSelecionado === "DIFICIL" &&
-        (cobraInimiga || []).map((seg, idx) => (
-          <EnemySnakeSegment key={`enemy-${idx}`} segment={seg} />
-        ))}
+        {/* --- Cobra Inimiga (pixel) --- */}
+        {modoSelecionado === "DIFICIL" &&
+          cobraInimiga.map((seg: any, idx: number) => {
+            const enemyAnim = enemyAnimSegments[idx];   // <-- USO CORRETO DO ANIMADOR
 
-      {/* Comida */}
-      <Animated.View
-        style={{
-          position: "absolute",
-          left: comida.x * CELULA + 2,
-          top: comida.y * CELULA + 2,
-          width: CELULA - 4,
-          height: CELULA - 4,
-          borderRadius: 6,
-          backgroundColor: "#e53935",
-          transform: [{ scale: eatAnim || 1 }],
-        }}
-      />
+            return (
+              <Animated.View
+                key={"enemy-" + idx}
+                style={[
+                  styles.enemy,
+                  enemyAnim && {
+                    transform: [
+                      { translateX: enemyAnim.x },
+                      { translateY: enemyAnim.y }
+                    ],
+                  },
+                ]}
+              />
+            );
+          })}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  board: {
-    width: GRID_SIZE * CELULA,
-    height: GRID_SIZE * CELULA,
-    backgroundColor: "#fff",
-    borderWidth: 2,
-    borderColor: "#555",
+  wrapper: {
+    width: CELULA * 10,
+    height: CELULA * 10,
     position: "relative",
-    overflow: "hidden",
   },
-  segment: {
+
+  scorePixel: {
+    color: "#00ff66",
+    fontSize: 28,
+    fontFamily: "VT323_400Regular",
+    letterSpacing: 2,
+    marginBottom: 10,
+  },
+
+  // Borda estilo CRT retro
+  pixelBorder: {
     position: "absolute",
-    width: CELULA - 4,
-    height: CELULA - 4,
-    borderRadius: 6,
+    top: -6,
+    left: -6,
+    right: -6,
+    bottom: -6,
+    borderWidth: 6,
+    borderColor: "#00ff66",
+  },
+
+  board: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#000",
+  },
+
+  // Pixel quadrado da cobra
+  snake: {
+    width: CELULA,
+    height: CELULA,
+    backgroundColor: "#43a047",
+  },
+
+  // Pixel quadrado da cobra inimiga
+  enemy: {
+    width: CELULA,
+    height: CELULA,
+    backgroundColor: "#ff3333",
+    position: "absolute",
+  },
+
+  // Pixel quadrado da comida
+  food: {
+    width: CELULA,
+    height: CELULA,
+    backgroundColor: "#ffff00",
+    position: "absolute",
   },
 });
-    

@@ -21,18 +21,16 @@ export function igual(a: Posicao, b: Posicao) {
 }
 
 // gera posição da comida sem colidir com a cobra
-export function gerarComida(cobra: Posicao[]): Posicao {
-  let pos: Posicao;
-
+export function gerarComida(cobra: Posicao[]) {
   while (true) {
-    pos = {
-      x: Math.floor(Math.random() * GRID_SIZE),
-      y: Math.floor(Math.random() * GRID_SIZE),
-    };
+    const x = Math.floor(Math.random() * GRID_SIZE);
+    const y = Math.floor(Math.random() * GRID_SIZE);
 
-    // só aceita se NÃO estiver na cobra
-    if (!cobra.some((seg) => igual(seg, pos))) break;
+    const pos = { x, y };
+
+    // garante que a comida NÃO nasce em cima da cobra
+    if (!cobra.some((seg) => igual(seg, pos))) {
+      return pos;
+    }
   }
-
-  return pos;
 }

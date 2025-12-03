@@ -4,15 +4,18 @@
 import React, { useState } from "react";
 import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import Game from "./src/screens/Game";
+import { useFonts, VT323_400Regular } from "@expo-google-fonts/vt323";
+
 
 export default function App() {
-  // modo é null --> mostra menu
-  // modo é "FACIL" | "MEDIO" | "DIFICIL" --> entra no jogo
-  
+  const [fontsLoaded] = useFonts({
+  VT323_400Regular,
+  });
 
-  // Se o modo ainda não foi escolhido, mostrar menu
-  
-  // Quando o modo está selecionado, iniciar o jogo
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <Game/>

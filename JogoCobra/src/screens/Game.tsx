@@ -25,6 +25,8 @@ export default function Game() {
   const latestDirRef = useRef(DIRECOES.DIREITA);
   const eatAnim = useRef(new Animated.Value(1)).current;
   const animSegments = useRef<any[]>([]);
+  const enemyAnimSegments = useRef<any[]>([]);
+
 
   // Hook principal da cobra
   const {
@@ -151,8 +153,7 @@ const panResponder = useRef(
       onSelect={(modo: Modo) => {
       setModoSelecionado(modo);
 
-    // 🔥 reset total ao estado da cobra ANTES da contagem
-    resetCobra();              
+    // 🔥 reset total ao estado da cobra ANTES da contagem             
     setVelocidade(300);        
     latestDirRef.current = DIRECOES.DIREITA;
     setCobraInimiga([{ x: 8, y: 8 }]);
@@ -185,21 +186,27 @@ const panResponder = useRef(
   // Jogo ativo
   return (
     <View style={styles.root}>
-      <Text style={styles.score}>
-        Modo: {modoSelecionado} | Pontos: {pontos} | Melhor: {melhor}
+      <Text style={styles.scorePixel}>
+      {modoSelecionado} | {pontos} pts | REC {melhor}
       </Text>
 
+
       <GameBoard
-        cobra={cobra}
-        cobraInimiga={cobraInimiga}
-        comida={comida}
-        animSegments={animSegments.current}
-        eatAnim={eatAnim}
-        corCobra={corCobra}
-        modoSelecionado={modoSelecionado}
-        panHandlers={panResponder.panHandlers}
-        onRequestDirecao={requestDirecao}
+      cobra={cobra}
+       cobraInimiga={cobraInimiga}
+      comida={comida}
+     animSegments={animSegments.current}
+      enemyAnimSegments={enemyAnimSegments.current}   // <── ADICIONAR AQUI
+      eatAnim={eatAnim}
+     corCobra={corCobra}
+     modoSelecionado={modoSelecionado}
+      panHandlers={panResponder.panHandlers}
+      onRequestDirecao={requestDirecao}
       />
+      
+      <Text style={styles.score}>
+        Deslize para mover a cobra
+      </Text>
     </View>
   );
 }

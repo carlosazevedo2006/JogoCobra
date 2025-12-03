@@ -1,14 +1,15 @@
-// src/screens/WelcomeScreen.tsx
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
-export default function WelcomeScreen({ onContinue }: { onContinue: () => void }) {
+export default function WelcomeScreen({ onContinue }: any) {
   return (
     <View style={styles.root}>
-      <Text style={styles.title}>Jogo da Cobra</Text>
-
+      <Text style={styles.title}>JOGO DA COBRA</Text>
+      <Text style={{ color: "#00ff66", fontSize: 20, marginBottom: 60, fontFamily: "VT323_400Regular" }}>
+        Toque em JOGAR para começar
+      </Text>
       <TouchableOpacity style={styles.btn} onPress={onContinue}>
-        <Text style={styles.btnText}>Começar</Text>
+        <Text style={styles.btnText}>JOGAR</Text>
       </TouchableOpacity>
     </View>
   );
@@ -21,21 +22,26 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+
   title: {
-    fontSize: 40,
-    color: "#0f0",
+    fontSize: 60,
+    color: "#00ff66",
     marginBottom: 40,
-    fontWeight: "bold",
+    fontFamily: "VT323_400Regular",
+    letterSpacing: 3,
   },
+
   btn: {
-    backgroundColor: "#0f0",
     paddingVertical: 14,
-    paddingHorizontal: 26,
-    borderRadius: 10,
+    paddingHorizontal: 40,
+    backgroundColor: "#222",
+    borderWidth: 3,
+    borderColor: "#00ff66",
   },
+
   btnText: {
-    color: "#111",
-    fontSize: 20,
-    fontWeight: "bold",
+    color: "#00ff66",
+    fontSize: 32,
+    fontFamily: "VT323_400Regular",
   },
 });
