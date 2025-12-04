@@ -76,7 +76,7 @@ export default function useSnakeMovement({
       if (!prev || prev.length === 0) return prev;
 
       const head = prev[0];
-      const dir = latestDirRef.current || direcao;
+      const dir = latestDirRef.current;
       const novaHead: Posicao = { x: head.x + dir.x, y: head.y + dir.y };
 
       // colisão com paredes
@@ -137,7 +137,7 @@ export default function useSnakeMovement({
       // quando cresce precisa adicionar um Animated.ValueXY na posição da cauda anterior
       while (animSegments.current.length < novaCobra.length) {
         // tailRef: onde posicionar o novo segmento (cauda anterior)
-        const tailRef = prev.length > 0 ? prev[prev.length - 1] : prev[0];
+        const tailRef = prev.length >= 2 ? prev[prev.length - 1] : prev[0];
         const safe = tailRef || { x: startX, y: startY };
         animSegments.current.push(new Animated.ValueXY({ x: safe.x * CELULA, y: safe.y * CELULA }));
       }
