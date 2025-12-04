@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
 
   title: {
     color: "#00ff66",
-    fontSize: 48,
+    fontSize: 38,
     marginBottom: 40,
     fontFamily: "VT323_400Regular",
     letterSpacing: 2,
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
 
   btnText: {
     color: "#00ff66",
-    fontSize: 32,
+    fontSize: 22,
     textAlign: "center",
     fontFamily: "VT323_400Regular",
     letterSpacing: 1,

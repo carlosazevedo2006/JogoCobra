@@ -23,14 +23,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+// MODIFICA APENAS ESTES ESTILOS:
 
-  title: {
-    fontSize: 60,
-    color: "#00ff66",
-    marginBottom: 40,
-    fontFamily: "VT323_400Regular",
-    letterSpacing: 3,
-  },
+title: {
+  fontSize: 48,
+  color: "#00ff66",
+  marginBottom: 30,
+  fontFamily: "VT323_400Regular",
+  letterSpacing: 2,
+},
+
+btnText: {
+  color: "#00ff66",
+  fontSize: 20,
+  fontFamily: "VT323_400Regular",
+},
+
 
   btn: {
     paddingVertical: 14,
@@ -38,11 +46,5 @@ const styles = StyleSheet.create({
     backgroundColor: "#222",
     borderWidth: 3,
     borderColor: "#00ff66",
-  },
-
-  btnText: {
-    color: "#00ff66",
-    fontSize: 32,
-    fontFamily: "VT323_400Regular",
   },
 });

@@ -38,7 +38,8 @@ export default function Game() {
     melhor,
     velocidade,
     corCobra,
-
+    setPontos,
+    
     requestDirecao,
     step,
     resetCobra,
@@ -222,14 +223,14 @@ const styles = StyleSheet.create({
   },
 
   score: {
-    fontSize: 20,
+    fontSize: 16,
     color: "#00ff66",
     marginBottom: 16,
   },
 
   tip: {
     color: "#fff",
-    fontSize: 14,
+    fontSize: 12,
     marginTop: 20,
   },
 });
