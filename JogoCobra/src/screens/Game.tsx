@@ -99,34 +99,43 @@ export default function Game() {
 
     setCobraInimiga([{ x: 8, y: 8 }]);
     enemyAnimSegments.current = [];
-
+    
     setPontos(0);
     setGameOver(false);
     iniciarContagem();
+
   }
+  
 
   // === SWIPE (gestos) ===
   const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
+  PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: () => true,
 
-      onPanResponderRelease: (_, g) => {
-        const { dx, dy } = g;
-        const thresh = 14;
+    onPanResponderMove: (_evt, g) => {
+      const { dx, dy } = g;
 
-        const absX = Math.abs(dx);
-        const absY = Math.abs(dy);
-        if (absX < thresh && absY < thresh) return;
+      const absX = Math.abs(dx);
+      const absY = Math.abs(dy);
 
-        if (absX > absY) {
-          requestDirecao(dx > 0 ? DIRECOES.DIREITA : DIRECOES.ESQUERDA);
-        } else {
-          requestDirecao(dy > 0 ? DIRECOES.BAIXO : DIRECOES.CIMA);
-        }
-      },
-    })
-  ).current;
+      // precisa de mínimo movimento
+      if (absX < 10 && absY < 10) return;
+
+      // horizontal
+      if (absX > absY) {
+        requestDirecao(dx > 0 ? DIRECOES.DIREITA : DIRECOES.ESQUERDA);
+      } 
+      // vertical
+      else {
+        requestDirecao(dy > 0 ? DIRECOES.BAIXO : DIRECOES.CIMA);
+      }
+    },
+
+    onPanResponderRelease: () => {},
+  })
+).current;
+  
 
   // ============================
   //         RENDER FLOW
