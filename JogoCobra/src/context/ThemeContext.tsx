@@ -1,69 +1,65 @@
 import React, { createContext, useContext, useState } from "react";
+import { ColorValue } from "react-native";
 
-type ThemeType = "light" | "dark";
+type ThemeName = "dark" | "light";
 
-interface ThemeColors {
-  background: string;
-  card: string;
-  text: string;
-  board: string;
-  snake: string;
-  enemy: string;
-  food: string;
-  border: string;
-}
+const light = {
+  name: "light" as ThemeName,
+  background: "#f5f5f5",
+  card: "#ffffff",
+  primary: "#0f62fe",
+  textPrimary: "#111111",
+  textSecondary: "#333333",
+  buttonBg: "#0f62fe",
+  buttonText: "#ffffff",
+  boardBg: "#e9e9e9",
+  foodColor: "#ffb400",
+};
 
-interface ThemeContextProps {
-  theme: ThemeType;
-  colors: ThemeColors;
-  snakeColor: string;
-  setSnakeColor: (c: string) => void;
+const dark = {
+  name: "dark" as ThemeName,
+  background: "#0b0b0b",
+  card: "#111111",
+  primary: "#00e676",
+  textPrimary: "#e6ffee",
+  textSecondary: "#bfeecf",
+  buttonBg: "#00e676",
+  buttonText: "#0b0b0b",
+  boardBg: "#000000",
+  foodColor: "#ffd400",
+};
+
+type Theme = typeof light;
+
+const ThemeContext = createContext<{
+  theme: Theme;
+  themeName: ThemeName;
   toggleTheme: () => void;
-}
+  setThemeName: (t: ThemeName) => void;
+}>({
+  theme: dark,
+  themeName: "dark",
+  toggleTheme: () => {},
+  setThemeName: () => {},
+});
 
-const ThemeContext = createContext<ThemeContextProps>(null as any);
+export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [themeName, setThemeName] = useState<ThemeName>("dark");
+  const theme = themeName === "dark" ? dark : light;
 
-const darkTheme: ThemeColors = {
-  background: "#0A0F14",
-  card: "#11161D",
-  text: "#FFFFFF",
-  board: "#00070D",
-  snake: "#43a047", // será substituído pelo user
-  enemy: "#FF4A4A",
-  food: "#FF3B3B",
-  border: "#1A1F24",
-};
-
-const lightTheme: ThemeColors = {
-  background: "#FFFFFF",
-  card: "#F2F2F2",
-  text: "#000000",
-  board: "#EDEDED",
-  snake: "#43a047", // será substituído pelo user
-  enemy: "#E53935",
-  food: "#FF3B3B",
-  border: "#D0D0D0",
-};
-
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<ThemeType>("dark");
-  const [snakeColor, setSnakeColor] = useState("#43a047");
-
-  const toggleTheme = () => {
-    setTheme((t) => (t === "dark" ? "light" : "dark"));
-  };
-
-  const colors = theme === "dark" ? darkTheme : lightTheme;
+  function toggleTheme() {
+    setThemeName((t) => (t === "dark" ? "light" : "dark"));
+  }
 
   return (
-    <ThemeContext.Provider
-      value={{ theme, colors, snakeColor, setSnakeColor, toggleTheme }}
-    >
+    <ThemeContext.Provider value={{ theme, themeName, toggleTheme, setThemeName }}>
       {children}
     </ThemeContext.Provider>
   );
-}
+};
 
 export function useTheme() {
-  return useContext(ThemeContext);
+  const ctx = useContext(ThemeContext);
+  if (!ctx) throw new Error("useTheme must be used within ThemeProvider");
+  return { colors: ctx.theme, themeName: ctx.themeName, toggleTheme: ctx.toggleTheme, setThemeName: ctx.setThemeName };
 }

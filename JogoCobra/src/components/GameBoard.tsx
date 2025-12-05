@@ -10,23 +10,30 @@ export default function GameBoard({
   animSegments,
   enemyAnimSegments,
   eatAnim,
+  corCobra,
   modoSelecionado,
   panHandlers,
 }: any) {
-  const { colors, snakeColor } = useTheme();
+  const { colors } = useTheme();
 
   const size = GRID_SIZE * CELULA;
 
   return (
-    <View style={[styles.wrapper, { width: size, height: size }]} {...panHandlers}>
-      <View style={[styles.board, { backgroundColor: colors.board }]}>
+    <View
+      style={[
+        styles.wrapper,
+        { width: size, height: size, backgroundColor: colors.boardBg },
+      ]}
+      {...panHandlers}
+    >
+      <View style={[styles.board]}>
 
-        {/* Comida */}
+        {/* === COMIDA === */}
         <Animated.View
           style={[
             styles.food,
             {
-              backgroundColor: colors.food,
+              backgroundColor: colors.foodColor,
               transform: [
                 { translateX: comida.x * CELULA },
                 { translateY: comida.y * CELULA },
@@ -36,56 +43,76 @@ export default function GameBoard({
           ]}
         />
 
-        {/* Cobra */}
+        {/* === COBRA DO JOGADOR === */}
         {cobra.map((seg: any, i: number) => {
           const anim = animSegments[i];
+
           if (anim) {
             return (
               <Animated.View
                 key={`s-${i}`}
                 style={[
                   styles.snake,
-                  { backgroundColor: snakeColor },
-                  { transform: [{ translateX: anim.x }, { translateY: anim.y }] },
+                  { backgroundColor: corCobra || "#43a047" },
+                  {
+                    transform: [
+                      { translateX: anim.x },
+                      { translateY: anim.y },
+                    ],
+                  },
                 ]}
               />
             );
           }
+
           return (
             <View
               key={`s-static-${i}`}
               style={[
                 styles.snake,
-                { backgroundColor: snakeColor },
-                { left: seg.x * CELULA, top: seg.y * CELULA },
+                { backgroundColor: corCobra || "#43a047" },
+                {
+                  left: seg.x * CELULA,
+                  top: seg.y * CELULA,
+                },
               ]}
             />
           );
         })}
 
-        {/* Cobra inimiga */}
+        {/* === COBRA INIMIGA (apenas modo difícil) === */}
         {modoSelecionado === "DIFICIL" &&
           cobraInimiga.map((seg: any, i: number) => {
             const anim = enemyAnimSegments?.[i];
+
             if (anim) {
               return (
                 <Animated.View
                   key={`e-${i}`}
                   style={[
                     styles.enemy,
-                    { backgroundColor: colors.enemy },
-                    { transform: [{ translateX: anim.x }, { translateY: anim.y }] },
+                    {
+                      backgroundColor: "#ff3b3b",
+                      transform: [
+                        { translateX: anim.x },
+                        { translateY: anim.y },
+                      ],
+                    },
                   ]}
                 />
               );
             }
+
             return (
               <View
                 key={`e-static-${i}`}
                 style={[
                   styles.enemy,
-                  { backgroundColor: colors.enemy },
-                  { left: seg.x * CELULA, top: seg.y * CELULA },
+                  {
+                    left: seg.x * CELULA,
+                    top: seg.y * CELULA,
+                    backgroundColor: "#ff3b3b",
+                  },
                 ]}
               />
             );
@@ -100,28 +127,29 @@ const styles = StyleSheet.create({
     position: "relative",
     alignItems: "center",
     justifyContent: "center",
+    borderRadius: 14,
+    overflow: "hidden",
+    elevation: 8,
   },
 
   board: {
-    position: "relative",
     width: "100%",
     height: "100%",
-    overflow: "hidden",
-    borderRadius: 12,
+    position: "relative",
   },
 
   snake: {
     position: "absolute",
     width: CELULA,
     height: CELULA,
-    borderRadius: 4,
+    borderRadius: 6,
   },
 
   enemy: {
     position: "absolute",
     width: CELULA,
     height: CELULA,
-    borderRadius: 4,
+    borderRadius: 6,
   },
 
   food: {

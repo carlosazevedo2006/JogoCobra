@@ -2,24 +2,26 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "../context/ThemeContext";
 
-export default function CountdownScreen({ value }: any) {
+export default function CountdownScreen({ value }: { value: number }) {
   const { colors } = useTheme();
-
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.count, { color: colors.text }]}>{value}</Text>
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
+      <View style={[styles.card, { backgroundColor: colors.card }]}>
+        <Text style={[styles.text, { color: colors.textPrimary }]}>{value > 0 ? value : "JÁ!"}</Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
+  root: { flex: 1, alignItems: "center", justifyContent: "center" },
+  card: {
+    width: 160,
+    height: 160,
+    borderRadius: 12,
     alignItems: "center",
+    justifyContent: "center",
+    elevation: 6,
   },
-  count: {
-    fontSize: 110,
-    fontWeight: "800",
-  },
+  text: { fontSize: 56, fontWeight: "800" },
 });

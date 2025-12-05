@@ -1,7 +1,7 @@
 import React from "react";
 import { SafeAreaView } from "react-native";
 import { ThemeProvider } from "./src/context/ThemeContext";
-import Game from "./src/components/Game";
+import Game from "./src/screens/Game";
 
 export default function App() {
   return (

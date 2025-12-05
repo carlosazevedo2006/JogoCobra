@@ -1,46 +1,35 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Modo } from "../types/types";
 import { useTheme } from "../context/ThemeContext";
 
-export default function ModeSelectScreen({ onSelect }: any) {
+export default function ModeSelectScreen({ onSelect }: { onSelect: (modo: Modo) => void }) {
   const { colors } = useTheme();
 
-  const modes = [
-    {
-      id: "FACIL",
-      title: "Fácil",
-      desc: "Movimentação normal. Sem cobra inimiga.",
-    },
-    {
-      id: "MEDIO",
-      title: "Médio",
-      desc: "Velocidade aumenta conforme come.",
-    },
-    {
-      id: "DIFICIL",
-      title: "Difícil",
-      desc: "Uma cobra inimiga tenta colidir contigo.",
-    },
+  const modos: { key: Modo; label: string; desc: string }[] = [
+    { key: "FACIL", label: "Fácil", desc: "Lento — ideal para aprender" },
+    { key: "MEDIO", label: "Médio", desc: "Velocidade progressiva" },
+    { key: "DIFICIL", label: "Difícil", desc: "Cobra inimiga + desafio" },
   ];
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>
-        Selecionar Modo
-      </Text>
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.textPrimary }]}>Selecionar Modo</Text>
 
-      {modes.map((m) => (
+      {modos.map((m) => (
         <TouchableOpacity
-          key={m.id}
-          onPress={() => onSelect(m.id)}
-          style={[styles.card, { backgroundColor: colors.card }]}
+          key={m.key}
+          style={[styles.modeBtn, { backgroundColor: colors.card }]}
+          onPress={() => onSelect(m.key)}
+          activeOpacity={0.85}
         >
-          <Text style={[styles.cardTitle, { color: colors.text }]}>
-            {m.title}
-          </Text>
-          <Text style={[styles.cardDesc, { color: colors.text }]}>
-            {m.desc}
-          </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.modeLabel, { color: colors.textPrimary }]}>{m.label}</Text>
+            <Text style={[styles.modeDesc, { color: colors.textSecondary }]}>{m.desc}</Text>
+          </View>
+          <View style={[styles.pill, { backgroundColor: colors.primary }]}>
+            <Text style={{ color: colors.buttonText }}>{m.label === "Fácil" ? "★" : m.label === "Médio" ? "☆" : "⚑"}</Text>
+          </View>
         </TouchableOpacity>
       ))}
     </View>
@@ -48,30 +37,17 @@ export default function ModeSelectScreen({ onSelect }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    gap: 18,
+  root: { flex: 1, padding: 20, alignItems: "center", justifyContent: "center" },
+  title: { fontSize: 28, marginBottom: 18, fontWeight: "700" },
+  modeBtn: {
+    width: "100%",
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 12,
+    flexDirection: "row",
+    alignItems: "center",
   },
-
-  title: {
-    marginTop: 40,
-    fontSize: 32,
-    fontWeight: "700",
-  },
-
-  card: {
-    padding: 22,
-    borderRadius: 16,
-  },
-
-  cardTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-  },
-
-  cardDesc: {
-    marginTop: 6,
-    opacity: 0.75,
-  },
+  modeLabel: { fontSize: 18, fontWeight: "700" },
+  modeDesc: { fontSize: 13, marginTop: 4 },
+  pill: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 8 },
 });

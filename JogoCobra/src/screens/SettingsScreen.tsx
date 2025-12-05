@@ -1,103 +1,69 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, TextInput } from "react-native";
 import { useTheme } from "../context/ThemeContext";
 
-export default function SettingsScreen({ onBack }: any) {
-  const { colors, theme, toggleTheme, snakeColor, setSnakeColor } = useTheme();
-
-  const palette = ["#43a047", "#00BCD4", "#FF9800", "#E91E63", "#9C27B0"];
+export default function SettingsScreen({ onClose, onApply }: { onClose: () => void; onApply: () => void }) {
+  const { colors, themeName, setThemeName } = useTheme();
+  const [snakeColor, setSnakeColor] = useState("#43a047");
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>Definições</Text>
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
+      <View style={[styles.card, { backgroundColor: colors.card }]}>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>Definições</Text>
 
-      {/* Tema */}
-      <TouchableOpacity
-        onPress={toggleTheme}
-        style={[styles.option, { backgroundColor: colors.card }]}
-      >
-        <Text style={[styles.optionText, { color: colors.text }]}>
-          Tema: {theme === "dark" ? "Escuro" : "Claro"}
-        </Text>
-      </TouchableOpacity>
+        <View style={{ width: "100%", marginTop: 8 }}>
+          <Text style={{ color: colors.textSecondary, marginBottom: 6 }}>Tema</Text>
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <TouchableOpacity
+              onPress={() => setThemeName("light")}
+              style={[styles.smallBtn, themeName === "light" ? { borderColor: colors.primary, borderWidth: 2 } : { borderColor: "#888" }]}
+            >
+              <Text>Claro</Text>
+            </TouchableOpacity>
 
-      {/* Cor da cobra */}
-      <Text style={[styles.subtitle, { color: colors.text }]}>Cor da Cobra</Text>
-      <View style={styles.paletteRow}>
-        {palette.map((c) => (
-          <TouchableOpacity
-            key={c}
-            onPress={() => setSnakeColor(c)}
-            style={[
-              styles.colorDot,
-              { backgroundColor: c, borderWidth: snakeColor === c ? 3 : 0 },
-            ]}
+            <TouchableOpacity
+              onPress={() => setThemeName("dark")}
+              style={[styles.smallBtn, themeName === "dark" ? { borderColor: colors.primary, borderWidth: 2 } : { borderColor: "#888" }]}
+            >
+              <Text>Escuro</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={{ width: "100%", marginTop: 12 }}>
+          <Text style={{ color: colors.textSecondary, marginBottom: 6 }}>Cor da cobra (hex)</Text>
+          <TextInput
+            value={snakeColor}
+            onChangeText={setSnakeColor}
+            style={[styles.input, { backgroundColor: colors.boardBg, color: colors.textPrimary }]}
+            placeholder="#43a047"
+            placeholderTextColor={colors.textSecondary}
           />
-        ))}
-      </View>
+          <Text style={{ color: colors.textSecondary, marginTop: 6, fontSize: 12 }}>
+            (Esta opção apenas altera a aparência; não altera lógica.)
+          </Text>
+        </View>
 
-      {/* Botão voltar */}
-      <TouchableOpacity
-        onPress={onBack}
-        style={[styles.buttonSecondary, { borderColor: colors.text }]}
-      >
-        <Text style={[styles.buttonSecondaryText, { color: colors.text }]}>
-          Voltar
-        </Text>
-      </TouchableOpacity>
+        <View style={{ flexDirection: "row", marginTop: 16 }}>
+          <TouchableOpacity onPress={onApply} style={[styles.btn, { backgroundColor: colors.buttonBg }]}>
+            <Text style={{ color: colors.buttonText }}>Aplicar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={onClose} style={[styles.btnOutline]}>
+            <Text style={{ color: colors.textSecondary }}>Fechar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    gap: 22,
-  },
-
-  title: {
-    fontSize: 32,
-    marginTop: 24,
-    fontWeight: "700",
-  },
-
-  option: {
-    padding: 18,
-    borderRadius: 14,
-  },
-
-  optionText: {
-    fontSize: 18,
-  },
-
-  subtitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: -10,
-  },
-
-  paletteRow: {
-    flexDirection: "row",
-    gap: 12,
-  },
-
-  colorDot: {
-    width: 42,
-    height: 42,
-    borderRadius: 42,
-    borderColor: "white",
-  },
-
-  buttonSecondary: {
-    marginTop: 40,
-    paddingVertical: 16,
-    borderRadius: 14,
-    borderWidth: 2,
-    alignItems: "center",
-  },
-
-  buttonSecondaryText: {
-    fontSize: 18,
-  },
+  root: { flex: 1, alignItems: "center", justifyContent: "center", padding: 20 },
+  card: { width: "95%", padding: 16, borderRadius: 12 },
+  title: { fontSize: 22, fontWeight: "800" },
+  smallBtn: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 8, marginRight: 8 },
+  input: { padding: 10, borderRadius: 8, fontSize: 16 },
+  btn: { paddingVertical: 10, paddingHorizontal: 18, borderRadius: 10, marginRight: 8 },
+  btnOutline: { paddingVertical: 10, paddingHorizontal: 18, borderRadius: 10, borderWidth: 0, marginLeft: 8 },
 });
