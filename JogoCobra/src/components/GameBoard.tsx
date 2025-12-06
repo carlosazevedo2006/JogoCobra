@@ -15,26 +15,14 @@ export default function GameBoard({
   modoSelecionado,
   panHandlers,
 }: any) {
-  
-  const { colors } = useTheme(); // ← tema aplicado
-
+  const { colors } = useTheme();
   const size = GRID_SIZE * CELULA;
-
   const safeEatAnim = eatAnim ?? new Animated.Value(1);
 
   return (
-    <View
-      style={[styles.wrapper, { width: size, height: size }]}
-      {...panHandlers}
-    >
-      <View
-        style={[
-          styles.board,
-          { backgroundColor: colors.card } // ← correto agora
-        ]}
-      >
+    <View style={[styles.wrapper, { width: size, height: size }]} {...panHandlers}>
+      <View style={[styles.board, { backgroundColor: colors.card }]}>
 
-        {/* --- COMIDA VISÍVEL SEMPRE --- */}
         <Animated.View
           style={[
             styles.food,
@@ -46,17 +34,15 @@ export default function GameBoard({
           ]}
         />
 
-        {/* Cobra jogador */}
         {cobra.map((seg: any, i: number) => {
           const anim = animSegments?.[i];
-
-          if (anim && typeof anim.x !== "undefined") {
+          if (anim) {
             return (
               <Animated.View
                 key={`s-${i}`}
                 style={[
                   styles.snake,
-                  { backgroundColor: corCobra ?? "#43a047" },
+                  { backgroundColor: corCobra },
                   { transform: [{ translateX: anim.x }, { translateY: anim.y }] },
                 ]}
               />
@@ -68,35 +54,26 @@ export default function GameBoard({
               key={`s-static-${i}`}
               style={[
                 styles.snake,
-                { backgroundColor: corCobra ?? "#43a047" },
-                { left: seg.x * CELULA, top: seg.y * CELULA },
+                { backgroundColor: corCobra, left: seg.x * CELULA, top: seg.y * CELULA },
               ]}
             />
           );
         })}
 
-        {/* Cobra inimiga */}
         {modoSelecionado === "DIFICIL" &&
           cobraInimiga?.map((seg: any, i: number) => {
             const anim = enemyAnimSegments?.[i];
-
-            if (anim && typeof anim.x !== "undefined") {
+            if (anim) {
               return (
                 <Animated.View
                   key={`e-${i}`}
                   style={[
                     styles.enemy,
-                    {
-                      transform: [
-                        { translateX: anim.x },
-                        { translateY: anim.y },
-                      ],
-                    },
+                    { transform: [{ translateX: anim.x }, { translateY: anim.y }] },
                   ]}
                 />
               );
             }
-
             return (
               <View
                 key={`e-static-${i}`}
@@ -115,8 +92,6 @@ export default function GameBoard({
 const styles = StyleSheet.create({
   wrapper: {
     position: "relative",
-    alignItems: "center",
-    justifyContent: "center",
   },
 
   board: {
@@ -124,9 +99,7 @@ const styles = StyleSheet.create({
     height: "100%",
     position: "relative",
     overflow: "hidden",
-    borderWidth: 2,
-    borderColor: "#888",
-    borderRadius: 8,
+    borderRadius: 10,
   },
 
   snake: {
@@ -149,8 +122,8 @@ const styles = StyleSheet.create({
     width: CELULA,
     height: CELULA,
     backgroundColor: "#ffd400",
-    borderRadius: 3,
-    zIndex: 999,
+    borderRadius: 2,
+    zIndex: 10,
     borderWidth: 1,
     borderColor: "#b88600",
   },
