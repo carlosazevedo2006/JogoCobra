@@ -22,7 +22,6 @@ import { DIRECOES } from "../utils/constants";
 export default function Game() {
   const { colors } = useTheme();
 
-  // Flow das telas
   const [showWelcome, setShowWelcome] = useState(true);
   const [showModeSelection, setShowModeSelection] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -32,7 +31,6 @@ export default function Game() {
   const [gameOver, setGameOver] = useState(false);
   const [jogando, setJogando] = useState(false);
 
-  // refs principais
   const latestDirRef = useRef(DIRECOES.DIREITA);
   const animSegments = useRef<any[]>([]);
   const enemyAnimSegments = useRef<any[]>([]);
@@ -61,7 +59,7 @@ export default function Game() {
     },
   });
 
-  // Cobra inimiga (modo difícil)
+  // Cobra inimiga
   const {
     cobraInimiga,
     setCobraInimiga,
@@ -76,17 +74,15 @@ export default function Game() {
     },
   });
 
-  // Loop do jogo
   useGameLoop(jogando, velocidade, () => {
     step();
     moverCobraInimiga();
   });
 
-  // Contagem antes de começar
+  // CONTAGEM
   function iniciarContagem() {
     setJogando(false);
     setContador(3);
-
     let c = 3;
 
     const id = setInterval(() => {
@@ -101,12 +97,18 @@ export default function Game() {
     }, 1000);
   }
 
-  // Reiniciar jogo
+  // REINICIAR JOGO — (corrigido)
   function reiniciar() {
     resetCobra();
     latestDirRef.current = DIRECOES.DIREITA;
 
-    setCobraInimiga([{ x: 8, y: 8 }]);
+    // inimigo só no modo difícil
+    if (modoSelecionado === "DIFICIL") {
+      setCobraInimiga([{ x: 14, y: 14 }]);
+    } else {
+      setCobraInimiga([]);
+    }
+
     enemyAnimSegments.current = [];
 
     setPontos(0);
@@ -114,7 +116,7 @@ export default function Game() {
     iniciarContagem();
   }
 
-  // Swipe super responsivo
+  // SWIPE
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: () => true,
@@ -134,10 +136,7 @@ export default function Game() {
     })
   ).current;
 
-  // =============================
-  //        RENDER FLOW
-  // =============================
-
+  // RENDER FLOW
   if (showSettings)
     return (
       <SettingsScreen
@@ -164,7 +163,15 @@ export default function Game() {
           setModoSelecionado(modo);
 
           resetCobra();
-          setCobraInimiga([{ x: 8, y: 8 }]);
+          latestDirRef.current = DIRECOES.DIREITA;
+
+          // inimigo só no difícil (corrigido)
+          if (modo === "DIFICIL") {
+            setCobraInimiga([{ x: 14, y: 14 }]);
+          } else {
+            setCobraInimiga([]);
+          }
+
           enemyAnimSegments.current = [];
 
           setShowModeSelection(false);
@@ -183,22 +190,20 @@ export default function Game() {
         onRestart={reiniciar}
         onMenu={() => {
           resetCobra();
+          latestDirRef.current = DIRECOES.DIREITA;
+
+          setCobraInimiga([]);
+          enemyAnimSegments.current = [];
+
           setShowModeSelection(true);
           setModoSelecionado(null);
+          setGameOver(false);
         }}
       />
     );
 
-  // =============================
-  //      JOGO A DECORRER
-  // =============================
   return (
-    <View
-      style={[
-        styles.root,
-        { backgroundColor: colors.background },
-      ]}
-    >
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
       <Text style={[styles.score, { color: colors.textPrimary }]}>
         {modoSelecionado} • {pontos} pts • REC {melhor}
       </Text>
@@ -222,9 +227,6 @@ export default function Game() {
   );
 }
 
-// =============================
-//           STYLES
-// =============================
 const styles = StyleSheet.create({
   root: {
     flex: 1,
