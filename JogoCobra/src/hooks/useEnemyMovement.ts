@@ -10,36 +10,36 @@ export default function useEnemyMovement({
   enemyAnimSegments,
   terminarJogo,
 }: any) {
-
-  // ⚠ Inimigo começa SEMPRE vazio (só ativado no Game.tsx quando for modo difícil)
+  
+  // Inimigo começa sempre vazio. É o Game.tsx que decide quando ativar.
   const [cobraInimiga, setCobraInimiga] = useState<Posicao[]>([]);
 
   function moverCobraInimiga() {
-    // ⚠ O inimigo só funciona no modo difícil
+    // Só existe no modo difícil
     if (modoSelecionado !== "DIFICIL") return;
 
-    // ⚠ Se não existe inimigo, não faz nada
+    // Sem cobra inimiga → nada a fazer
     if (!cobraInimiga.length) return;
 
     setCobraInimiga((prev) => {
-      if (!prev || prev.length === 0) return prev;
+      if (!prev.length) return prev;
 
       const head = prev[0];
       const alvo = cobra[0];
       if (!alvo) return prev;
 
+      // Movimento direto em direção ao jogador
       const dx = Math.sign(alvo.x - head.x);
       const dy = Math.sign(alvo.y - head.y);
-
       const novaHead = { x: head.x + dx, y: head.y + dy };
 
-      // colisão com jogador
+      // Colisão com jogador
       if (igual(novaHead, alvo)) {
         terminarJogo();
         return prev;
       }
 
-      // evitar sair dos limites
+      // Limites da grelha
       if (
         novaHead.x < 0 ||
         novaHead.x >= GRID_SIZE ||
@@ -49,7 +49,7 @@ export default function useEnemyMovement({
         return prev;
       }
 
-      // ⚠ Garantir segmentos DA ANIMAÇÃO somente no modo difícil
+      // Inicializa segmento animado, se necessário
       if (enemyAnimSegments.current.length === 0) {
         enemyAnimSegments.current = [
           new Animated.ValueXY({
@@ -59,13 +59,14 @@ export default function useEnemyMovement({
         ];
       }
 
-      // animação suave
+      // Anima a cabeça inimiga
       Animated.timing(enemyAnimSegments.current[0], {
         toValue: { x: novaHead.x * CELULA, y: novaHead.y * CELULA },
         duration: 160,
         useNativeDriver: false,
       }).start();
 
+      // Retorna nova posição (cobra inimiga tem 1 segmento)
       return [novaHead];
     });
   }
