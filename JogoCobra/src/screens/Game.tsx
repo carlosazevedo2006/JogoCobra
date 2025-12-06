@@ -209,29 +209,30 @@ export default function Game() {
     );
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <Text style={[styles.score, { color: colors.textPrimary }]}>
-        {modoSelecionado} • {pontos} pontos • Melhor pontuação {melhor}
-      </Text>
+  <View style={[styles.root, { backgroundColor: colors.background }]}>
+    <Text style={[styles.score, { color: colors.textPrimary }]}>
+      {modoSelecionado} • {pontos} pontos • Melhor pontuação {melhor}
+    </Text>
+
     <GameBoard
        cobra={cobra}
        cobraInimiga={cobraInimiga}
-      comida={comida}
+       comida={comida}
        animSegments={animSegments.current}
        enemyAnimSegments={enemyAnimSegments.current}
-      eatAnim={eatAnim}
-      corCobra={corCobra ?? "#43a047"}   // <-- fallback rígido garantido
-      modoSelecionado={modoSelecionado}
-      panHandlers={panResponder.panHandlers}
-/>
+       eatAnim={eatAnim}
+       corCobra={corCobra ?? "#43a047"}   // fallback
+       modoSelecionado={modoSelecionado}
+       panHandlers={panResponder.panHandlers}
+       colors={colors}                    // <<< CORREÇÃO ESSENCIAL
+    />
 
+    <Text style={[styles.tip, { color: colors.textSecondary }]}>
+      Desliza para CIMA, BAIXO, ESQUERDA ou DIREITA para mover a cobra, dentro do tabuleiro.
+    </Text>
+  </View>
+);
 
-      <Text style={[styles.tip, { color: colors.textSecondary }]}>
-        Desliza para CIMA, BAIXO, ESQUERDA ou DIREITA para mover a cobra, dentro do tabuleiro.
-        
-      </Text>
-    </View>
-  );
 }
 
 const styles = StyleSheet.create({

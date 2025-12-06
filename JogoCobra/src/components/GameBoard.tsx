@@ -2,6 +2,7 @@
 import React from "react";
 import { View, StyleSheet, Animated } from "react-native";
 import { GRID_SIZE, CELULA } from "../utils/constants";
+import { useTheme } from "../context/ThemeContext";
 
 export default function GameBoard({
   cobra,
@@ -13,10 +14,12 @@ export default function GameBoard({
   corCobra,
   modoSelecionado,
   panHandlers,
-  colors,          // ← RECEBEMOS O TEMA AQUI
 }: any) {
+  
+  const { colors } = useTheme(); // ← tema aplicado
 
   const size = GRID_SIZE * CELULA;
+
   const safeEatAnim = eatAnim ?? new Animated.Value(1);
 
   return (
@@ -27,11 +30,11 @@ export default function GameBoard({
       <View
         style={[
           styles.board,
-          { backgroundColor: colors.card },   // ← TEMA APLICADO
+          { backgroundColor: colors.card } // ← correto agora
         ]}
       >
 
-        {/* --- COMIDA --- */}
+        {/* --- COMIDA VISÍVEL SEMPRE --- */}
         <Animated.View
           style={[
             styles.food,
@@ -43,46 +46,36 @@ export default function GameBoard({
           ]}
         />
 
-        {/* --- COBRA --- */}
+        {/* Cobra jogador */}
         {cobra.map((seg: any, i: number) => {
           const anim = animSegments?.[i];
 
-          // animado
           if (anim && typeof anim.x !== "undefined") {
             return (
               <Animated.View
                 key={`s-${i}`}
                 style={[
                   styles.snake,
-                  { backgroundColor: corCobra },
-                  {
-                    transform: [
-                      { translateX: anim.x },
-                      { translateY: anim.y },
-                    ],
-                  },
+                  { backgroundColor: corCobra ?? "#43a047" },
+                  { transform: [{ translateX: anim.x }, { translateY: anim.y }] },
                 ]}
               />
             );
           }
 
-          // estático (fallback)
           return (
             <View
               key={`s-static-${i}`}
               style={[
                 styles.snake,
-                {
-                  backgroundColor: corCobra,
-                  left: seg.x * CELULA,
-                  top: seg.y * CELULA,
-                },
+                { backgroundColor: corCobra ?? "#43a047" },
+                { left: seg.x * CELULA, top: seg.y * CELULA },
               ]}
             />
           );
         })}
 
-        {/* --- COBRA INIMIGA (difícil) --- */}
+        {/* Cobra inimiga */}
         {modoSelecionado === "DIFICIL" &&
           cobraInimiga?.map((seg: any, i: number) => {
             const anim = enemyAnimSegments?.[i];
@@ -131,32 +124,34 @@ const styles = StyleSheet.create({
     height: "100%",
     position: "relative",
     overflow: "hidden",
-    borderRadius: 8,      // visual minimalista
+    borderWidth: 2,
+    borderColor: "#888",
+    borderRadius: 8,
   },
 
   snake: {
     position: "absolute",
     width: CELULA,
     height: CELULA,
-    borderRadius: 4,
+    borderRadius: 2,
   },
 
   enemy: {
     position: "absolute",
     width: CELULA,
     height: CELULA,
+    borderRadius: 2,
     backgroundColor: "#ff3b3b",
-    borderRadius: 4,
   },
 
   food: {
     position: "absolute",
     width: CELULA,
     height: CELULA,
-    backgroundColor: "#ff9500",
-    borderRadius: 6,
-    zIndex: 10,
-    borderWidth: 1.5,
-    borderColor: "#b45c00",
+    backgroundColor: "#ffd400",
+    borderRadius: 3,
+    zIndex: 999,
+    borderWidth: 1,
+    borderColor: "#b88600",
   },
 });
