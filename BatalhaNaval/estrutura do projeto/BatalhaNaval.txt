@@ -1,0 +1,25 @@
+BatalhaNaval/
+├── node_modules/
+├── src/
+│   ├── components/
+│   │   ├── Cell.tsx
+│   │   └── Board.tsx
+│   ├── screens/
+│   │   ├── HomeScreen.tsx
+│   │   ├── SetupScreen.tsx
+│   │   ├── GameScreen.tsx
+│   │   └── EndScreen.tsx
+│   ├── types/
+│   │   └── game.ts
+│   ├── utils/
+│   │   ├── gameLogic.ts
+│   │   └── network.ts
+│   ├── constants/
+│   │   └── game.ts
+│   └── navigation/
+│       └── AppNavigator.tsx
+├── App.tsx
+├── app.json
+├── package.json
+├── tsconfig.json
+└── README.md
