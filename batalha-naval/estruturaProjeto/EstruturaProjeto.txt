@@ -1,0 +1,57 @@
+batalha-naval/
+│
+├── app/                     # Navegação (Expo Router)
+│   ├── index.tsx            # Ecrã inicial (menu)
+│   ├── lobby.tsx            # Criar / entrar numa partida
+│   ├── setup.tsx            # Colocação dos navios
+│   ├── game.tsx             # Jogo principal
+│   └── result.tsx           # Vitória / derrota
+│
+├── src/
+│   ├── components/          # Componentes reutilizáveis
+│   │   ├── Board.tsx
+│   │   ├── Cell.tsx
+│   │   ├── Ship.tsx
+│   │   ├── TurnIndicator.tsx
+│   │   └── Button.tsx
+│   │
+│   ├── screens/             # Lógica visual de cada ecrã
+│   │   ├── LobbyScreen.tsx
+│   │   ├── SetupScreen.tsx
+│   │   ├── GameScreen.tsx
+│   │   └── ResultScreen.tsx
+│   │
+│   ├── models/              # Tipos e interfaces (TypeScript)
+│   │   ├── Board.ts
+│   │   ├── Cell.ts
+│   │   ├── Ship.ts
+│   │   ├── Player.ts
+│   │   └── GameState.ts
+│   │
+│   ├── services/            # Lógica não-visual
+│   │   ├── gameLogic.ts     # Regras do jogo
+│   │   ├── shipPlacement.ts # Validação de navios
+│   │   └── network.ts       # Comunicação WLAN
+│   │
+│   ├── hooks/               # Hooks personalizados
+│   │   ├── useGame.ts
+│   │   └── useNetwork.ts
+│   │
+│   ├── utils/               # Funções auxiliares
+│   │   ├── constants.ts
+│   │   ├── random.ts
+│   │   └── boardHelpers.ts
+│   │
+│   └── styles/              # Estilos globais
+│       ├── colors.ts
+│       ├── spacing.ts
+│       └── theme.ts
+│
+├── assets/                  # Imagens, ícones, sons
+│   ├── ships/
+│   └── sounds/
+│
+├── app.json                 # Configuração Expo
+├── tsconfig.json            # TypeScript
+├── package.json
+└── README.md

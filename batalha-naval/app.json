@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "BatalhaNaval",
-    "slug": "BatalhaNaval",
+    "name": "batalha-naval",
+    "slug": "batalha-naval",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
