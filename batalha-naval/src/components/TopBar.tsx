@@ -1,19 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, ScrollView } from 'react-native';
-import Constants from 'expo-constants';
+import { getServerUrl } from '../utils/config';
 
 interface TopBarProps {
   onBack?: () => void;
   backLabel?: string;
   rightText?: string;
-}
-
-function getServerUrl(): string | undefined {
-  const extra: any =
-    (Constants as any)?.expoConfig?.extra ??
-    (Constants as any)?.manifest?.extra ??
-    undefined;
-  return extra?.serverUrl;
 }
 
 export function TopBar({ onBack, backLabel = 'Voltar', rightText }: TopBarProps) {

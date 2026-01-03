@@ -6,7 +6,7 @@ import { placeFleetRandomly } from '../services/shipPlacement';
 import { shoot, areAllShipsSunk } from '../services/gameLogic';
 import { ShotResult } from '../models/ShotResult';
 import { Network } from '../services/network';
-import Constants from 'expo-constants';
+import { getServerUrl, getRoomSalt } from '../utils/config';
 
 interface GameContextType {
   gameState: GameState;
@@ -20,20 +20,8 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-function getServerUrl(): string | undefined {
-  const extra: any =
-    (Constants as any)?.expoConfig?.extra ??
-    (Constants as any)?.manifest?.extra ??
-    undefined;
-  return extra?.serverUrl;
-}
-
 function makeRoomId(player1Name: string, player2Name: string): string {
-  const extra: any =
-    (Constants as any)?.expoConfig?.extra ??
-    (Constants as any)?.manifest?.extra ??
-    {};
-  const salt = extra?.roomSalt ?? 'bn';
+  const salt = getRoomSalt();
   const joined = [player1Name.trim(), player2Name.trim()].sort().join('#') + '#' + salt;
   let h = 0;
   for (let i = 0; i < joined.length; i++) {
@@ -72,9 +60,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
       setGameState(state);
       
       // When server state arrives, re-map myPlayerId based on our local name
+      // Use case-insensitive matching since player names might have different casing
       if (localSelfNameRef.current && state.players.length > 0) {
+        const localNameLower = localSelfNameRef.current.toLowerCase().trim();
         const matchingPlayer = state.players.find(
-          p => p.name.toLowerCase() === localSelfNameRef.current.toLowerCase()
+          p => p.name.toLowerCase().trim() === localNameLower
         );
         if (matchingPlayer) {
           setMyPlayerId(matchingPlayer.id);
