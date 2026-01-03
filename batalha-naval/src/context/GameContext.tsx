@@ -147,7 +147,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
         const boardHasFleet = p.board.ships.length > 0;
         if (!boardHasFleet) {
           // placeFleetRandomly mutates the board in place and returns success boolean
-          placeFleetRandomly(p.board);
+          const success = placeFleetRandomly(p.board);
+          if (!success) {
+            console.error('Failed to auto-place fleet for player', p.id);
+            // Still mark as ready - the board will have whatever ships could be placed
+          }
         }
         return { ...p, isReady: true };
       });

@@ -100,8 +100,6 @@ function handleMessage(ws, msg) {
 
 function handleJoinOrCreate(ws, payload) {
   const { roomId, selfId, playersRequested } = payload;
-function handleJoinOrCreate(ws, payload) {
-  const { roomId, selfId, playersRequested } = payload;
   
   if (!rooms.has(roomId)) {
     rooms.set(roomId, { players: [], gameState: null });
