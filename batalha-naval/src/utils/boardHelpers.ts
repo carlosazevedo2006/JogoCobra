@@ -4,40 +4,25 @@ import { Cell } from '../models/Cell';
 
 // Cria uma célula vazia
 export function createCell(row: number, col: number): Cell {
-  return {
-    row,
-    col,
-    hasShip: false,
-    hit: false,
-  };
+  return { row, col, hasShip: false, hit: false };
 }
 
 // Cria um tabuleiro vazio 10x10
 export function createEmptyBoard(): Board {
   const grid: Cell[][] = [];
 
-  for (let row = 0; row < BOARD_SIZE; row++) {
-    const rowCells: Cell[] = [];
-
-    for (let col = 0; col < BOARD_SIZE; col++) {
-      rowCells.push(createCell(row, col));
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    const row: Cell[] = [];
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      row.push(createCell(r, c));
     }
-
-    grid.push(rowCells);
+    grid.push(row);
   }
 
-  return {
-    grid,
-    ships: [],
-  };
+  return { grid, ships: [] };
 }
 
-// Verifica se uma posição está dentro do tabuleiro
+// Verifica se posição está dentro do tabuleiro
 export function isInsideBoard(row: number, col: number): boolean {
-  return (
-    row >= 0 &&
-    row < BOARD_SIZE &&
-    col >= 0 &&
-    col < BOARD_SIZE
-  );
+  return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
 }

@@ -2,61 +2,27 @@ import { Board } from '../models/Board';
 import { ShotResult } from '../models/ShotResult';
 import { Ship } from '../models/Ship';
 
-/**
- * Dispara numa célula do tabuleiro
- */
-export function shoot(
-  board: Board,
-  row: number,
-  col: number
-): ShotResult {
+// Disparo numa célula
+export function shoot(board: Board, row: number, col: number): ShotResult {
   const cell = board.grid[row][col];
-
-  // Já foi atingida
-  if (cell.hit) {
-    return 'water';
-  }
+  if (cell.hit) return 'water';
 
   cell.hit = true;
+  if (!cell.hasShip) return 'water';
 
-  // Água
-  if (!cell.hasShip) {
-    return 'water';
-  }
-
-  // Acertou num navio
-  const ship = findShipAtPosition(board.ships, row, col);
-
-  if (!ship) {
-    return 'hit';
-  }
+  const ship = findShip(board.ships, row, col);
+  if (!ship) return 'hit';
 
   ship.hits++;
-
-  // Navio afundado
-  if (ship.hits >= ship.size) {
-    return 'sunk';
-  }
-
-  return 'hit';
+  return ship.hits >= ship.size ? 'sunk' : 'hit';
 }
 
-/**
- * Procura o navio que ocupa uma determinada posição
- */
-function findShipAtPosition(
-  ships: Ship[],
-  row: number,
-  col: number
-): Ship | undefined {
-  return ships.find(ship =>
-    ship.positions.some(pos => pos.row === row && pos.col === col)
-  );
+// Procura navio numa posição
+function findShip(ships: Ship[], row: number, col: number): Ship | undefined {
+  return ships.find(s => s.positions.some(p => p.row === row && p.col === col));
 }
 
-/**
- * Verifica se todos os navios foram afundados
- */
+// Verifica fim de jogo
 export function areAllShipsSunk(board: Board): boolean {
-  return board.ships.every(ship => ship.hits >= ship.size);
+  return board.ships.every(s => s.hits >= s.size);
 }

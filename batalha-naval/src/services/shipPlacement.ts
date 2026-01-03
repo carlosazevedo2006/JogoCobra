@@ -4,12 +4,7 @@ import { BOARD_SIZE, SHIPS_CONFIG } from '../utils/constants';
 import { isInsideBoard } from '../utils/boardHelpers';
 import { randomInt, randomFromArray } from '../utils/random';
 
-/**
- * Verifica se um navio pode ser colocado numa determinada posição
- * - dentro do tabuleiro
- * - sem sobreposição
- * - sem contacto (lado ou diagonal)
- */
+// Verifica se um navio pode ser colocado
 export function canPlaceShip(
   board: Board,
   startRow: number,
@@ -19,27 +14,20 @@ export function canPlaceShip(
 ): boolean {
   const positions: ShipPosition[] = [];
 
-  // Calcular posições do navio
   for (let i = 0; i < size; i++) {
     const row = orientation === 'horizontal' ? startRow : startRow + i;
     const col = orientation === 'horizontal' ? startCol + i : startCol;
 
-    if (!isInsideBoard(row, col)) {
-      return false;
-    }
-
+    if (!isInsideBoard(row, col)) return false;
     positions.push({ row, col });
   }
 
-  // Verificar sobreposição e contacto (lado e diagonal)
-  for (const pos of positions) {
-    for (let r = pos.row - 1; r <= pos.row + 1; r++) {
-      for (let c = pos.col - 1; c <= pos.col + 1; c++) {
+  // Regra: não sobrepor nem encostar (lado/diagonal)
+  for (const p of positions) {
+    for (let r = p.row - 1; r <= p.row + 1; r++) {
+      for (let c = p.col - 1; c <= p.col + 1; c++) {
         if (!isInsideBoard(r, c)) continue;
-
-        if (board.grid[r][c].hasShip) {
-          return false;
-        }
+        if (board.grid[r][c].hasShip) return false;
       }
     }
   }
@@ -47,34 +35,29 @@ export function canPlaceShip(
   return true;
 }
 
-/**
- * Coloca um navio no tabuleiro
- */
+// Coloca um navio
 export function placeShip(
   board: Board,
-  shipName: string,
+  name: string,
   size: number,
-  startRow: number,
-  startCol: number,
+  row: number,
+  col: number,
   orientation: ShipOrientation
 ): Ship | null {
-  if (!canPlaceShip(board, startRow, startCol, size, orientation)) {
-    return null;
-  }
+  if (!canPlaceShip(board, row, col, size, orientation)) return null;
 
   const positions: ShipPosition[] = [];
 
   for (let i = 0; i < size; i++) {
-    const row = orientation === 'horizontal' ? startRow : startRow + i;
-    const col = orientation === 'horizontal' ? startCol + i : startCol;
-
-    board.grid[row][col].hasShip = true;
-    positions.push({ row, col });
+    const r = orientation === 'horizontal' ? row : row + i;
+    const c = orientation === 'horizontal' ? col + i : col;
+    board.grid[r][c].hasShip = true;
+    positions.push({ row: r, col: c });
   }
 
   const ship: Ship = {
-    id: `${shipName}-${Date.now()}-${Math.random()}`,
-    name: shipName,
+    id: `${name}-${Date.now()}`,
+    name,
     size,
     positions,
     hits: 0,
@@ -85,55 +68,33 @@ export function placeShip(
   return ship;
 }
 
-/**
- * Coloca toda a frota de forma aleatória no tabuleiro
- */
+// Colocação aleatória da frota
 export function placeFleetRandomly(board: Board): boolean {
-  // Limpar tabuleiro
   board.ships = [];
 
-  for (let row = 0; row < BOARD_SIZE; row++) {
-    for (let col = 0; col < BOARD_SIZE; col++) {
-      board.grid[row][col].hasShip = false;
-      board.grid[row][col].hit = false;
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      board.grid[r][c].hasShip = false;
+      board.grid[r][c].hit = false;
     }
   }
 
-  // Colocar cada navio da frota
-  for (const shipConfig of SHIPS_CONFIG) {
+  for (const ship of SHIPS_CONFIG) {
     let placed = false;
-    let attempts = 0;
+    let tries = 0;
 
-    while (!placed && attempts < 100) {
-      attempts++;
+    while (!placed && tries < 100) {
+      tries++;
+      const orientation = randomFromArray<ShipOrientation>(['horizontal', 'vertical']);
+      const row = randomInt(0, BOARD_SIZE - 1);
+      const col = randomInt(0, BOARD_SIZE - 1);
 
-      const orientation: ShipOrientation = randomFromArray([
-        'horizontal',
-        'vertical',
-      ]);
-
-      const startRow = randomInt(0, BOARD_SIZE - 1);
-      const startCol = randomInt(0, BOARD_SIZE - 1);
-
-      const ship = placeShip(
-        board,
-        shipConfig.name,
-        shipConfig.size,
-        startRow,
-        startCol,
-        orientation
-      );
-
-      if (ship) {
+      if (placeShip(board, ship.name, ship.size, row, col, orientation)) {
         placed = true;
       }
     }
 
-    // Segurança extra (muito improvável acontecer)
-    if (!placed) {
-      console.warn(`Falha ao colocar o navio: ${shipConfig.name}`);
-      return false;
-    }
+    if (!placed) return false;
   }
 
   return true;
