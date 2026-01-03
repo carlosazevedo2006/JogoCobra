@@ -21,12 +21,10 @@ export function TopBar({ onBack, backLabel = 'Voltar', rightText }: TopBarProps)
     <>
       <View style={[styles.container, { paddingTop: insets.top + 10 }]}>
         <View style={styles.leftSection}>
-          {onBack ? (
+          {onBack && (
             <TouchableOpacity style={styles.button} onPress={onBack}>
               <Text style={styles.buttonText}>← {backLabel}</Text>
             </TouchableOpacity>
-          ) : (
-            <View style={styles.spacer} />
           )}
         </View>
 
@@ -131,9 +129,6 @@ const styles = StyleSheet.create({
   leftSection: {
     flex: 1,
     alignItems: 'flex-start',
-  },
-  spacer: {
-    width: 80,
   },
   centerSection: {
     flex: 1,
