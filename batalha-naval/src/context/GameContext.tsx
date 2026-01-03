@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react';
 import { GameState, GamePhase } from '../models/GameState';
 import { Player } from '../models/Player';
-import { createEmptyBoard, placeFleetRandomly } from '../utils/boardHelpers';
+import { createEmptyBoard } from '../utils/boardHelpers';
+import { placeFleetRandomly } from '../services/shipPlacement';
 import { shoot, areAllShipsSunk } from '../services/gameLogic';
 import { ShotResult } from '../models/ShotResult';
 import { Network } from '../services/network';
@@ -136,8 +137,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const players = prev.players.map((p, i) => {
         if (i !== idx) return p;
         const boardHasFleet = p.board.ships.length > 0;
-        const newBoard = boardHasFleet ? p.board : placeFleetRandomly(p.board);
-        return { ...p, isReady: true, board: newBoard };
+        if (!boardHasFleet) {
+          // placeFleetRandomly mutates the board in place and returns success boolean
+          placeFleetRandomly(p.board);
+        }
+        return { ...p, isReady: true };
       });
 
       const allReady = players.every(p => p.isReady);

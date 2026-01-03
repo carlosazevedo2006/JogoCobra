@@ -81,8 +81,8 @@ function handleMessage(ws, msg) {
   const { type, payload } = msg;
   
   switch (type) {
-    case 'JOIN_ROOM':
-      handleJoinRoom(ws, payload);
+    case 'JOIN_OR_CREATE':
+      handleJoinOrCreate(ws, payload);
       break;
     case 'PLAYER_READY':
       handlePlayerReady(ws, payload);
@@ -98,8 +98,10 @@ function handleMessage(ws, msg) {
   }
 }
 
-function handleJoinRoom(ws, payload) {
-  const { roomId, playerId, playerName } = payload;
+function handleJoinOrCreate(ws, payload) {
+  const { roomId, selfId, playersRequested } = payload;
+function handleJoinOrCreate(ws, payload) {
+  const { roomId, selfId, playersRequested } = payload;
   
   if (!rooms.has(roomId)) {
     rooms.set(roomId, { players: [], gameState: null });
@@ -111,12 +113,13 @@ function handleJoinRoom(ws, payload) {
     room.players.push(ws);
   }
   
-  console.log(`Player ${playerName} joined room ${roomId} (${room.players.length}/2)`);
+  const playerNames = playersRequested.map(p => p.name).join(' vs ');
+  console.log(`Client ${selfId} joined room ${roomId}: ${playerNames} (${room.players.length}/2)`);
   
   // Notify all players in room
   broadcast(roomId, 'ROOM_UPDATE', {
     playerCount: room.players.length,
-    message: `${playerName} joined`,
+    message: `Player joined (${room.players.length}/2)`,
   });
 }
 
@@ -249,14 +252,17 @@ Both devices will now be synchronized. When one player fires, the other sees the
 
 ### Messages from Client to Server
 
-**JOIN_ROOM**
+**JOIN_OR_CREATE**
 ```json
 {
-  "type": "JOIN_ROOM",
+  "type": "JOIN_OR_CREATE",
   "payload": {
-    "roomId": "room_alice_bob_salt",
-    "playerId": "p_abc123",
-    "playerName": "Alice"
+    "roomId": "room_12345",
+    "selfId": "cli_abc123",
+    "playersRequested": [
+      { "id": "player1", "name": "Alice" },
+      { "id": "player2", "name": "Bob" }
+    ]
   }
 }
 ```
@@ -266,8 +272,9 @@ Both devices will now be synchronized. When one player fires, the other sees the
 {
   "type": "PLAYER_READY",
   "payload": {
-    "playerId": "p_abc123",
-    "roomId": "room_alice_bob_salt"
+    "roomId": "room_12345",
+    "playerId": "player1",
+    "board": { "cells": [...], "ships": [...] }
   }
 }
 ```
@@ -277,8 +284,8 @@ Both devices will now be synchronized. When one player fires, the other sees the
 {
   "type": "FIRE",
   "payload": {
-    "roomId": "room_alice_bob_salt",
-    "attackerId": "p_abc123",
+    "roomId": "room_12345",
+    "attackerId": "player1",
     "targetRow": 3,
     "targetCol": 5
   }
@@ -290,7 +297,7 @@ Both devices will now be synchronized. When one player fires, the other sees the
 {
   "type": "RESET",
   "payload": {
-    "roomId": "room_alice_bob_salt"
+    "roomId": "room_12345"
   }
 }
 ```
@@ -303,10 +310,10 @@ Both devices will now be synchronized. When one player fires, the other sees the
   "type": "SERVER_STATE",
   "payload": {
     "players": [...],
-    "currentTurnPlayerId": "p_abc123",
+    "currentTurnPlayerId": "player1",
     "phase": "playing",
-    "selfId": "p_abc123",
-    "roomId": "room_alice_bob_salt"
+    "selfId": "cli_abc123",
+    "roomId": "room_12345"
   }
 }
 ```
