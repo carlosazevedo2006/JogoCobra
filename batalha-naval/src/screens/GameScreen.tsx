@@ -32,12 +32,13 @@ export function GameScreen() {
   const opponent = gameState.players.find(p => p.id !== gameState.currentTurnPlayerId)!;
 
   // Este dispositivo pode agir se o turno atual pertence ao jogador local
+  // Em modo local (myPlayerId undefined), sempre permite ação
   const canAct = useMemo(
-    () => !!myPlayerId && gameState.currentTurnPlayerId === myPlayerId,
+    () => !myPlayerId || gameState.currentTurnPlayerId === myPlayerId,
     [myPlayerId, gameState.currentTurnPlayerId]
   );
   
-  // Show which player this device controls
+  // Show which player this device controls (only in multiplayer)
   const devicePlayerText = myPlayerId 
     ? `Você: ${gameState.players.find(p => p.id === myPlayerId)?.name || 'N/A'}`
     : undefined;

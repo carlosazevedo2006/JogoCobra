@@ -93,19 +93,46 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   function createPlayers(player1Name: string, player2Name: string) {
     // IMPORTANTE: o nome no campo "Jogador 1" DESTE dispositivo é o jogador local
-    // Mapeamos myPlayerId baseado em qual nome na lista ordenada corresponde ao player1Name local
     const trimmedPlayer1 = player1Name.trim();
     const trimmedPlayer2 = player2Name.trim();
-    const sortedNames = [trimmedPlayer1, trimmedPlayer2].sort();
-    const myNameIndex = sortedNames.indexOf(trimmedPlayer1);
-    const localPlayerId = myNameIndex === 0 ? 'player1' : 'player2';
     
     // Store the local player's name for later server state mapping
     localSelfNameRef.current = trimmedPlayer1;
-    setMyPlayerId(localPlayerId);
+    
+    if (!multiplayer) {
+      // Em modo local, não há dispositivos separados, então myPlayerId não é necessário
+      // mas definimos como player1 por padrão para consistência
+      setMyPlayerId(undefined);
+      
+      const player1: Player = {
+        id: 'player1',
+        name: trimmedPlayer1,
+        board: createEmptyBoard(),
+        isReady: false,
+      };
+
+      const player2: Player = {
+        id: 'player2',
+        name: trimmedPlayer2,
+        board: createEmptyBoard(),
+        isReady: false,
+      };
+
+      setGameState({
+        players: [player1, player2],
+        currentTurnPlayerId: player1.id,
+        phase: 'setup',
+      });
+      return;
+    }
 
     // Em multiplayer, os IDs dos jogadores são consistentes baseados na ordem alfabética
     // para que ambos os dispositivos tenham o mesmo mapeamento
+    const sortedNames = [trimmedPlayer1, trimmedPlayer2].sort();
+    const myNameIndex = sortedNames.indexOf(trimmedPlayer1);
+    const localPlayerId = myNameIndex === 0 ? 'player1' : 'player2';
+    setMyPlayerId(localPlayerId);
+
     const player1: Player = {
       id: 'player1',
       name: sortedNames[0],
@@ -119,18 +146,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
       board: createEmptyBoard(),
       isReady: false,
     };
-
-    if (!multiplayer) {
-      // Em modo local, usamos os nomes na ordem digitada
-      player1.name = player1Name;
-      player2.name = player2Name;
-      setGameState({
-        players: [player1, player2],
-        currentTurnPlayerId: player1.id,
-        phase: 'setup',
-      });
-      return;
-    }
 
     const roomId = makeRoomId(player1Name, player2Name);
     roomIdRef.current = roomId;
