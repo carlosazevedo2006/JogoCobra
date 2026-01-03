@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react';
 import { GameState, GamePhase } from '../models/GameState';
 import { Player } from '../models/Player';
-import { createEmptyBoard, placeFleetRandomly } from '../utils/boardHelpers';
+import { createEmptyBoard } from '../utils/boardHelpers';
+import { placeFleetRandomly } from '../services/shipPlacement';
 import { shoot, areAllShipsSunk } from '../services/gameLogic';
 import { ShotResult } from '../models/ShotResult';
 import { Network } from '../services/network';
@@ -80,25 +81,35 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   function createPlayers(player1Name: string, player2Name: string) {
     // IMPORTANTE: o nome no campo "Jogador 1" DESTE dispositivo é o jogador local
-    // Assim, este dispositivo controla 'player1'. No outro dispositivo, o campo "Jogador 1"
-    // deve ter o nome do outro jogador para que lá controlem 'player2'.
-    setMyPlayerId('player1');
+    // Mapeamos myPlayerId baseado em qual nome na lista ordenada corresponde ao player1Name local
+    const trimmedPlayer1 = player1Name.trim();
+    const trimmedPlayer2 = player2Name.trim();
+    const sortedNames = [trimmedPlayer1, trimmedPlayer2].sort();
+    const myNameIndex = sortedNames.indexOf(trimmedPlayer1);
+    const localPlayerId = myNameIndex === 0 ? 'player1' : 'player2';
+    
+    setMyPlayerId(localPlayerId);
 
+    // Em multiplayer, os IDs dos jogadores são consistentes baseados na ordem alfabética
+    // para que ambos os dispositivos tenham o mesmo mapeamento
     const player1: Player = {
       id: 'player1',
-      name: player1Name,
+      name: sortedNames[0],
       board: createEmptyBoard(),
       isReady: false,
     };
 
     const player2: Player = {
       id: 'player2',
-      name: player2Name,
+      name: sortedNames[1],
       board: createEmptyBoard(),
       isReady: false,
     };
 
     if (!multiplayer) {
+      // Em modo local, usamos os nomes na ordem digitada
+      player1.name = player1Name;
+      player2.name = player2Name;
       setGameState({
         players: [player1, player2],
         currentTurnPlayerId: player1.id,
@@ -122,8 +133,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       roomId,
       selfId: selfIdRef.current,
       playersRequested: [
-        { id: 'player1', name: player1Name },
-        { id: 'player2', name: player2Name },
+        { id: 'player1', name: sortedNames[0] },
+        { id: 'player2', name: sortedNames[1] },
       ],
     });
   }
@@ -136,8 +147,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const players = prev.players.map((p, i) => {
         if (i !== idx) return p;
         const boardHasFleet = p.board.ships.length > 0;
-        const newBoard = boardHasFleet ? p.board : placeFleetRandomly(p.board);
-        return { ...p, isReady: true, board: newBoard };
+        if (!boardHasFleet) {
+          // placeFleetRandomly mutates the board in place and returns success boolean
+          const success = placeFleetRandomly(p.board);
+          if (!success) {
+            console.error(
+              `Failed to auto-place fleet for player ${p.id} (${p.name}). ` +
+              `Board may have insufficient space or placement constraints are too strict. ` +
+              `Player will proceed with partially placed ships.`
+            );
+            // Still mark as ready - the board will have whatever ships could be placed
+          }
+        }
+        return { ...p, isReady: true };
       });
 
       const allReady = players.every(p => p.isReady);

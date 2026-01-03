@@ -8,13 +8,13 @@ The Batalha Naval app now supports **WLAN (WiFi) multiplayer** allowing two play
 
 ### Automatic Room Pairing
 
-When two players enter **the same two names** (in any order) in the Lobby screen, they automatically join the same game room:
+When two players enter **the same two names** in the Lobby screen, they automatically join the same game room. Each player enters their OWN name in "Jogador 1" and the opponent's name in "Jogador 2":
 
-- **Player 1** enters: "Alice" and "Bob"
-- **Player 2** enters: "Bob" and "Alice"
+- **Alice's device** enters: "Alice" (Player 1) and "Bob" (Player 2)
+- **Bob's device** enters: "Bob" (Player 1) and "Alice" (Player 2)
 - Result: Both join room `room_alice_bob_<salt>`
 
-The room ID is deterministic (derived from sorted names + salt), so no manual room codes are needed!
+The room ID is deterministic (derived from sorted names + salt), so no manual room codes are needed! The app automatically maps each device to control the correct player based on alphabetical order.
 
 ### Game Flow
 
@@ -81,8 +81,8 @@ function handleMessage(ws, msg) {
   const { type, payload } = msg;
   
   switch (type) {
-    case 'JOIN_ROOM':
-      handleJoinRoom(ws, payload);
+    case 'JOIN_OR_CREATE':
+      handleJoinOrCreate(ws, payload);
       break;
     case 'PLAYER_READY':
       handlePlayerReady(ws, payload);
@@ -98,8 +98,8 @@ function handleMessage(ws, msg) {
   }
 }
 
-function handleJoinRoom(ws, payload) {
-  const { roomId, playerId, playerName } = payload;
+function handleJoinOrCreate(ws, payload) {
+  const { roomId, selfId, playersRequested } = payload;
   
   if (!rooms.has(roomId)) {
     rooms.set(roomId, { players: [], gameState: null });
@@ -111,12 +111,13 @@ function handleJoinRoom(ws, payload) {
     room.players.push(ws);
   }
   
-  console.log(`Player ${playerName} joined room ${roomId} (${room.players.length}/2)`);
+  const playerNames = playersRequested.map(p => p.name).join(' vs ');
+  console.log(`Client ${selfId} joined room ${roomId}: ${playerNames} (${room.players.length}/2)`);
   
   // Notify all players in room
   broadcast(roomId, 'ROOM_UPDATE', {
     playerCount: room.players.length,
-    message: `${playerName} joined`,
+    message: `Player joined (${room.players.length}/2)`,
   });
 }
 
@@ -229,34 +230,39 @@ Then open on two devices using Expo Go or development build.
 
 ## Playing Multiplayer
 
-### Device 1:
+**Important:** Each player enters their OWN name in the "Jogador 1" field and the opponent's name in "Jogador 2".
+
+### Device 1 (Alice):
 1. Open the app
-2. Enter: Player 1 = "Alice", Player 2 = "Bob"
+2. Enter: Player 1 = "Alice" (your name), Player 2 = "Bob" (opponent's name)
 3. Press "Iniciar Jogo"
 4. Ships auto-placed → Press "Iniciar Jogo" again
 5. Wait for Device 2
 
-### Device 2:
+### Device 2 (Bob):
 1. Open the app
-2. Enter: Player 1 = "Bob", Player 2 = "Alice" (same names, any order!)
+2. Enter: Player 1 = "Bob" (your name), Player 2 = "Alice" (opponent's name)
 3. Press "Iniciar Jogo"
 4. Ships auto-placed → Press "Iniciar Jogo" again
 5. Game starts!
 
-Both devices will now be synchronized. When one player fires, the other sees the result!
+Both devices will now be synchronized. The app automatically maps each device to the correct player based on the name entered in "Jogador 1" field. Players are internally mapped by alphabetical order (Alice=player1, Bob=player2), ensuring both devices have consistent game state.
 
 ## Network Protocol
 
 ### Messages from Client to Server
 
-**JOIN_ROOM**
+**JOIN_OR_CREATE**
 ```json
 {
-  "type": "JOIN_ROOM",
+  "type": "JOIN_OR_CREATE",
   "payload": {
-    "roomId": "room_alice_bob_salt",
-    "playerId": "p_abc123",
-    "playerName": "Alice"
+    "roomId": "room_12345",
+    "selfId": "cli_abc123",
+    "playersRequested": [
+      { "id": "player1", "name": "Alice" },
+      { "id": "player2", "name": "Bob" }
+    ]
   }
 }
 ```
@@ -266,8 +272,9 @@ Both devices will now be synchronized. When one player fires, the other sees the
 {
   "type": "PLAYER_READY",
   "payload": {
-    "playerId": "p_abc123",
-    "roomId": "room_alice_bob_salt"
+    "roomId": "room_12345",
+    "playerId": "player1",
+    "board": { "cells": [...], "ships": [...] }
   }
 }
 ```
@@ -277,8 +284,8 @@ Both devices will now be synchronized. When one player fires, the other sees the
 {
   "type": "FIRE",
   "payload": {
-    "roomId": "room_alice_bob_salt",
-    "attackerId": "p_abc123",
+    "roomId": "room_12345",
+    "attackerId": "player1",
     "targetRow": 3,
     "targetCol": 5
   }
@@ -290,7 +297,7 @@ Both devices will now be synchronized. When one player fires, the other sees the
 {
   "type": "RESET",
   "payload": {
-    "roomId": "room_alice_bob_salt"
+    "roomId": "room_12345"
   }
 }
 ```
@@ -303,10 +310,10 @@ Both devices will now be synchronized. When one player fires, the other sees the
   "type": "SERVER_STATE",
   "payload": {
     "players": [...],
-    "currentTurnPlayerId": "p_abc123",
+    "currentTurnPlayerId": "player1",
     "phase": "playing",
-    "selfId": "p_abc123",
-    "roomId": "room_alice_bob_salt"
+    "selfId": "cli_abc123",
+    "roomId": "room_12345"
   }
 }
 ```
