@@ -59,6 +59,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const selfIdRef = useRef<string>('cli_' + Math.random().toString(36).slice(2, 8));
   const roomIdRef = useRef<string | undefined>(undefined);
 
+  const localSelfNameRef = useRef<string>('');
+
   useEffect(() => {
     if (!multiplayer) return;
     if (networkRef.current) return;
@@ -68,6 +70,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
     // O servidor envia o estado autoritativo. Substituímos localmente.
     n.on('SERVER_STATE', (state: GameState) => {
       setGameState(state);
+      
+      // When server state arrives, re-map myPlayerId based on our local name
+      if (localSelfNameRef.current && state.players.length > 0) {
+        const matchingPlayer = state.players.find(
+          p => p.name.toLowerCase() === localSelfNameRef.current.toLowerCase()
+        );
+        if (matchingPlayer) {
+          setMyPlayerId(matchingPlayer.id);
+        }
+      }
     });
 
     (async () => {
@@ -88,6 +100,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const myNameIndex = sortedNames.indexOf(trimmedPlayer1);
     const localPlayerId = myNameIndex === 0 ? 'player1' : 'player2';
     
+    // Store the local player's name for later server state mapping
+    localSelfNameRef.current = trimmedPlayer1;
     setMyPlayerId(localPlayerId);
 
     // Em multiplayer, os IDs dos jogadores são consistentes baseados na ordem alfabética
