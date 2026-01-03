@@ -32,6 +32,10 @@ export function GameScreen({ onGameEnd }: GameScreenProps) {
   }
 
   function handleFire(row: number, col: number) {
+    if (!currentPlayer || !opponent) {
+      return;
+    }
+
     // Verificar se já foi atingida
     if (opponent.board.grid[row][col].hit) {
       Alert.alert('Atenção', 'Já disparaste nesta posição!');
