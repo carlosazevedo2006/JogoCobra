@@ -33,7 +33,7 @@ export function SetupScreen() {
         [{ text: 'OK', onPress: () => setCurrentPlayerIndex(currentPlayerIndex + 1) }]
       );
     } else {
-      const message = allShipsPlaced 
+      const message = allShipsPlaced
         ? 'Todos os jogadores colocaram seus navios. O jogo vai começar!'
         : 'Os navios serão colocados automaticamente. O jogo vai começar!';
       Alert.alert('Jogo Pronto!', message);

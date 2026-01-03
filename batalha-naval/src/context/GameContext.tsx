@@ -82,8 +82,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
   function createPlayers(player1Name: string, player2Name: string) {
     // IMPORTANTE: o nome no campo "Jogador 1" DESTE dispositivo é o jogador local
     // Mapeamos myPlayerId baseado em qual nome na lista ordenada corresponde ao player1Name local
-    const sortedNames = [player1Name.trim(), player2Name.trim()].sort();
-    const myNameIndex = sortedNames.indexOf(player1Name.trim());
+    const trimmedPlayer1 = player1Name.trim();
+    const trimmedPlayer2 = player2Name.trim();
+    const sortedNames = [trimmedPlayer1, trimmedPlayer2].sort();
+    const myNameIndex = sortedNames.indexOf(trimmedPlayer1);
     const localPlayerId = myNameIndex === 0 ? 'player1' : 'player2';
     
     setMyPlayerId(localPlayerId);
@@ -149,7 +151,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
           // placeFleetRandomly mutates the board in place and returns success boolean
           const success = placeFleetRandomly(p.board);
           if (!success) {
-            console.error('Failed to auto-place fleet for player', p.id);
+            console.error(
+              `Failed to auto-place fleet for player ${p.id} (${p.name}). ` +
+              `Board may have insufficient space or placement constraints are too strict. ` +
+              `Player will proceed with partially placed ships.`
+            );
             // Still mark as ready - the board will have whatever ships could be placed
           }
         }
