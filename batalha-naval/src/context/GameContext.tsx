@@ -1,15 +1,15 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import Constants from 'expo-constants';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react';
 import { GameState, GamePhase } from '../models/GameState';
 import { Player } from '../models/Player';
 import { createEmptyBoard, placeFleetRandomly } from '../utils/boardHelpers';
 import { shoot, areAllShipsSunk } from '../services/gameLogic';
 import { ShotResult } from '../models/ShotResult';
 import { Network } from '../services/network';
-import { SHIPS_CONFIG } from '../utils/constants';
+import Constants from 'expo-constants';
 
 interface GameContextType {
   gameState: GameState;
+  myPlayerId?: string; // jogador controlado neste dispositivo
   createPlayers: (player1Name: string, player2Name: string) => void;
   setPlayerReady: (playerId: string) => void;
   fire: (attackerId: string, targetRow: number, targetCol: number) => ShotResult | null;
@@ -19,12 +19,27 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-// Simple deterministic room ID from two names
-function makeRoomId(name1: string, name2: string, salt: string): string {
-  const clean1 = name1.toLowerCase().trim().replace(/[^a-z0-9]/g, '_');
-  const clean2 = name2.toLowerCase().trim().replace(/[^a-z0-9]/g, '_');
-  const sorted = [clean1, clean2].sort();
-  return `room:${sorted[0]}:${sorted[1]}:${salt.replace(/[^a-z0-9]/g, '_')}`;
+function getServerUrl(): string | undefined {
+  const extra: any =
+    (Constants as any)?.expoConfig?.extra ??
+    (Constants as any)?.manifest?.extra ??
+    undefined;
+  return extra?.serverUrl;
+}
+
+function makeRoomId(player1Name: string, player2Name: string): string {
+  const extra: any =
+    (Constants as any)?.expoConfig?.extra ??
+    (Constants as any)?.manifest?.extra ??
+    {};
+  const salt = extra?.roomSalt ?? 'bn';
+  const joined = [player1Name.trim(), player2Name.trim()].sort().join('#') + '#' + salt;
+  let h = 0;
+  for (let i = 0; i < joined.length; i++) {
+    h = (h << 5) - h + joined.charCodeAt(i);
+    h |= 0;
+  }
+  return 'room_' + Math.abs(h);
 }
 
 export function GameProvider({ children }: { children: ReactNode }) {
@@ -34,104 +49,123 @@ export function GameProvider({ children }: { children: ReactNode }) {
     phase: 'lobby',
   });
 
-  const [network, setNetwork] = useState<Network | null>(null);
-  const [isMultiplayer, setIsMultiplayer] = useState(false);
+  const [myPlayerId, setMyPlayerId] = useState<string | undefined>(undefined);
+
+  const serverUrl = useMemo(() => getServerUrl(), []);
+  const multiplayer = !!serverUrl;
+
+  const networkRef = useRef<Network | null>(null);
+  const selfIdRef = useRef<string>('cli_' + Math.random().toString(36).slice(2, 8));
+  const roomIdRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
-    const serverUrl = Constants.expoConfig?.extra?.serverUrl || '';
-    const roomSalt = Constants.expoConfig?.extra?.roomSalt || 'default-salt';
-    
-    if (serverUrl && serverUrl.trim()) {
-      const net = new Network();
-      net.connect(serverUrl).then(() => {
-        setNetwork(net);
-        setIsMultiplayer(true);
-        
-        // Listen for server state updates
-        net.on('SERVER_STATE', (payload: GameState) => {
-          setGameState(payload);
-        });
-      }).catch((err) => {
-        console.error('Failed to connect to server:', err);
-        setIsMultiplayer(false);
-      });
-    }
-  }, []);
+    if (!multiplayer) return;
+    if (networkRef.current) return;
+    const n = new Network();
+    networkRef.current = n;
+
+    // O servidor envia o estado autoritativo. Substituímos localmente.
+    n.on('SERVER_STATE', (state: GameState) => {
+      setGameState(state);
+    });
+
+    (async () => {
+      try {
+        await n.connect(serverUrl!);
+      } catch (e) {
+        console.warn('Falha ao ligar ao servidor WebSocket', e);
+      }
+    })();
+  }, [multiplayer, serverUrl]);
 
   function createPlayers(player1Name: string, player2Name: string) {
-    const selfId = network ? network.makePlayerId() : 'player1';
-    
+    // IMPORTANTE: o nome no campo "Jogador 1" DESTE dispositivo é o jogador local
+    // Assim, este dispositivo controla 'player1'. No outro dispositivo, o campo "Jogador 1"
+    // deve ter o nome do outro jogador para que lá controlem 'player2'.
+    setMyPlayerId('player1');
+
     const player1: Player = {
-      id: isMultiplayer ? selfId : 'player1',
+      id: 'player1',
       name: player1Name,
       board: createEmptyBoard(),
       isReady: false,
     };
 
     const player2: Player = {
-      id: isMultiplayer ? 'remote' : 'player2',
+      id: 'player2',
       name: player2Name,
       board: createEmptyBoard(),
       isReady: false,
     };
 
-    const newState: GameState = {
+    if (!multiplayer) {
+      setGameState({
+        players: [player1, player2],
+        currentTurnPlayerId: player1.id,
+        phase: 'setup',
+      });
+      return;
+    }
+
+    const roomId = makeRoomId(player1Name, player2Name);
+    roomIdRef.current = roomId;
+
+    setGameState({
       players: [player1, player2],
       currentTurnPlayerId: player1.id,
       phase: 'setup',
-      selfId: isMultiplayer ? selfId : undefined,
-      roomId: undefined,
-    };
+      selfId: selfIdRef.current,
+      roomId,
+    });
 
-    // If multiplayer, create/join room
-    if (isMultiplayer && network) {
-      const roomSalt = Constants.expoConfig?.extra?.roomSalt || 'default-salt';
-      const roomId = makeRoomId(player1Name, player2Name, roomSalt);
-      newState.roomId = roomId;
-      
-      network.emit('JOIN_ROOM', { roomId, playerId: selfId, playerName: player1Name });
-    }
-
-    setGameState(newState);
+    networkRef.current?.emit('JOIN_OR_CREATE', {
+      roomId,
+      selfId: selfIdRef.current,
+      playersRequested: [
+        { id: 'player1', name: player1Name },
+        { id: 'player2', name: player2Name },
+      ],
+    });
   }
 
   function setPlayerReady(playerId: string) {
     setGameState(prev => {
-      const players = prev.players.map(player => {
-        if (player.id === playerId) {
-          // Auto-place fleet if no ships placed
-          if (player.board.ships.length === 0) {
-            const newBoard = createEmptyBoard();
-            placeFleetRandomly(newBoard, SHIPS_CONFIG);
-            return { ...player, board: newBoard, isReady: true };
-          }
-          return { ...player, isReady: true };
-        }
-        return player;
+      const idx = prev.players.findIndex(p => p.id === playerId);
+      if (idx === -1) return prev;
+
+      const players = prev.players.map((p, i) => {
+        if (i !== idx) return p;
+        const boardHasFleet = p.board.ships.length > 0;
+        const newBoard = boardHasFleet ? p.board : placeFleetRandomly(p.board);
+        return { ...p, isReady: true, board: newBoard };
       });
 
       const allReady = players.every(p => p.isReady);
-
-      const newState = {
+      const next = {
         ...prev,
         players,
         phase: allReady ? 'playing' : prev.phase,
         currentTurnPlayerId: allReady ? players[0].id : prev.currentTurnPlayerId,
       };
 
-      // Emit ready state in multiplayer
-      if (isMultiplayer && network) {
-        network.emit('PLAYER_READY', { playerId, roomId: prev.roomId });
+      if (multiplayer && roomIdRef.current) {
+        networkRef.current?.emit('PLAYER_READY', {
+          roomId: roomIdRef.current,
+          playerId,
+          board: players[idx].board,
+        });
       }
 
-      return newState;
+      return next;
     });
   }
 
   function fire(attackerId: string, targetRow: number, targetCol: number): ShotResult | null {
+    // Só permite ação se for o turno deste jogador (proteção extra)
+    if (gameState.currentTurnPlayerId !== attackerId) return null;
+
     const attackerIndex = gameState.players.findIndex(p => p.id === attackerId);
     if (attackerIndex === -1) return null;
-    if (gameState.currentTurnPlayerId !== attackerId) return null;
 
     const defenderIndex = attackerIndex === 0 ? 1 : 0;
     const defender = gameState.players[defenderIndex];
@@ -143,7 +177,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const gameFinished = areAllShipsSunk(updatedDefender.board);
 
     setGameState(prev => {
-      const nextTurn = prev.players[defenderIndex].id; // Rule B: always alternate
+      const nextTurn = prev.players[defenderIndex].id; // alterna sempre
       return {
         ...prev,
         players: updatedPlayers,
@@ -153,10 +187,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
       };
     });
 
-    // Emit fire event in multiplayer
-    if (isMultiplayer && network) {
-      network.emit('FIRE', {
-        roomId: gameState.roomId,
+    if (multiplayer && roomIdRef.current) {
+      networkRef.current?.emit('FIRE', {
+        roomId: roomIdRef.current,
         attackerId,
         targetRow,
         targetCol,
@@ -167,15 +200,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }
 
   function resetGame() {
-    if (isMultiplayer && network) {
-      network.emit('RESET', { roomId: gameState.roomId });
+    if (multiplayer && roomIdRef.current) {
+      networkRef.current?.emit('RESET', { roomId: roomIdRef.current });
     }
-
     setGameState({
       players: [],
       currentTurnPlayerId: '',
       phase: 'lobby',
     });
+    setMyPlayerId(undefined);
   }
 
   function updatePhase(phase: GamePhase) {
@@ -186,6 +219,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     <GameContext.Provider
       value={{
         gameState,
+        myPlayerId,
         createPlayers,
         setPlayerReady,
         fire,

@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, Alert, ScrollView } from 'react-native';
 import { Board } from '../components/Board';
 import { useGameContext } from '../context/GameContext';
 import { ShotResult } from '../models/ShotResult';
 
 export function GameScreen() {
-  const { gameState, fire } = useGameContext();
+  const { gameState, fire, myPlayerId } = useGameContext();
   const [lastShotResult, setLastShotResult] = useState<ShotResult['outcome'] | ''>('');
 
   if (gameState.players.length < 2) {
@@ -16,20 +16,21 @@ export function GameScreen() {
     );
   }
 
-  const currentPlayer = gameState.players.find(p => p.id === gameState.currentTurnPlayerId);
-  const opponent = gameState.players.find(p => p.id !== gameState.currentTurnPlayerId);
+  const currentPlayer = gameState.players.find(p => p.id === gameState.currentTurnPlayerId)!;
+  const opponent = gameState.players.find(p => p.id !== gameState.currentTurnPlayerId)!;
 
-  if (!currentPlayer || !opponent) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>Erro ao carregar jogadores</Text>
-      </View>
-    );
-  }
+  // Este dispositivo pode agir se o turno atual pertence ao jogador local
+  const canAct = useMemo(
+    () => !!myPlayerId && gameState.currentTurnPlayerId === myPlayerId,
+    [myPlayerId, gameState.currentTurnPlayerId]
+  );
 
   function handleFire(row: number, col: number) {
-    if (!currentPlayer || !opponent) return; // Extra safety check
-    
+    if (!canAct) {
+      Alert.alert('Atenção', 'Não é o seu turno!');
+      return;
+    }
+
     if (opponent.board.cells[row][col].hit) {
       Alert.alert('Atenção', 'Já disparaste nesta posição!');
       return;
@@ -66,9 +67,7 @@ export function GameScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.turnIndicator}>
-        <Text style={styles.turnText}>
-          Turno: {currentPlayer.name}
-        </Text>
+        <Text style={styles.turnText}>Turno: {currentPlayer.name}</Text>
         {lastShotResult && (
           <View style={[
             styles.resultBadge,
@@ -96,7 +95,11 @@ export function GameScreen() {
       <View style={styles.boardSection}>
         <Text style={styles.boardTitle}>Radar do Inimigo 🎯</Text>
         <Text style={styles.boardSubtitle}>Toca numa célula para disparar</Text>
-        <Board board={opponent.board} onCellPress={handleFire} showShips={false} />
+        <Board
+          board={opponent.board}
+          onCellPress={canAct ? handleFire : undefined}
+          showShips={false}
+        />
       </View>
 
       <View style={styles.statsBox}>

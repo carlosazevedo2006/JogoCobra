@@ -1,4 +1,4 @@
-import { Pressable, View, StyleSheet } from 'react-native';
+import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import { Cell as CellModel } from '../models/Board';
 
 interface CellProps {
@@ -23,9 +23,9 @@ export function Cell({ cell, onPress, showShips = false }: CellProps) {
   }
 
   return (
-    <Pressable onPress={onPress} disabled={!onPress}>
+    <TouchableOpacity onPress={onPress} activeOpacity={1} disabled={!onPress}>
       <View style={[styles.cell, { backgroundColor }]} />
-    </Pressable>
+    </TouchableOpacity>
   );
 }
 
