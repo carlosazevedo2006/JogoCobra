@@ -36,7 +36,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [isMultiplayer, setIsMultiplayer] = useState(false);
 
   useEffect(() => {
-    const serverUrl = Constants.expoConfig?.extra?.serverUrl;
+    const serverUrl = Constants.expoConfig?.extra?.serverUrl || '';
     const roomSalt = Constants.expoConfig?.extra?.roomSalt || 'default-salt';
     
     if (serverUrl && serverUrl.trim()) {
