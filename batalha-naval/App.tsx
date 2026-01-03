@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GameProvider, useGameContext } from './src/context/GameContext';
 import { LobbyScreen } from './src/screens/LobbyScreen';
 import { SetupScreen } from './src/screens/SetupScreen';
