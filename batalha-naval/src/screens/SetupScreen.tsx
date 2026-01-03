@@ -22,21 +22,21 @@ export function SetupScreen() {
   const allShipsPlaced = currentPlayer.board.ships.length === SHIPS_CONFIG.length;
 
   function handleReady() {
-    if (!allShipsPlaced) {
-      Alert.alert('Erro', `Coloca todos os ${SHIPS_CONFIG.length} navios primeiro!`);
-      return;
-    }
-
+    // Em modo multiplayer ou se os navios estiverem colocados, permite continuar
+    // A função setPlayerReady irá auto-colocar os navios se necessário
     setPlayerReady(currentPlayer.id);
 
     if (currentPlayerIndex < gameState.players.length - 1) {
       Alert.alert(
         'Próximo Jogador',
-        `${gameState.players[currentPlayerIndex + 1].name}, é a sua vez de colocar os navios!`,
+        `${gameState.players[currentPlayerIndex + 1].name}, é a sua vez de preparar!`,
         [{ text: 'OK', onPress: () => setCurrentPlayerIndex(currentPlayerIndex + 1) }]
       );
     } else {
-      Alert.alert('Jogo Pronto!', 'Todos os jogadores colocaram seus navios. O jogo vai começar!');
+      const message = allShipsPlaced 
+        ? 'Todos os jogadores colocaram seus navios. O jogo vai começar!'
+        : 'Os navios serão colocados automaticamente. O jogo vai começar!';
+      Alert.alert('Jogo Pronto!', message);
     }
   }
 
@@ -62,11 +62,16 @@ export function SetupScreen() {
       <Board board={currentPlayer.board} showShips={true} />
 
       <View style={styles.buttons}>
-        <TouchableOpacity style={styles.buttonPrimary} onPress={handleReady} disabled={!allShipsPlaced}>
+        <TouchableOpacity style={styles.buttonPrimary} onPress={handleReady}>
           <Text style={styles.buttonText}>
             {currentPlayerIndex < gameState.players.length - 1 ? 'Próximo Jogador' : 'Iniciar Jogo'}
           </Text>
         </TouchableOpacity>
+        {!allShipsPlaced && (
+          <Text style={styles.autoPlaceNote}>
+            💡 Os navios serão colocados automaticamente
+          </Text>
+        )}
       </View>
     </ScrollView>
   );
@@ -142,5 +147,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  autoPlaceNote: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    marginTop: 10,
+    fontStyle: 'italic',
   },
 });
