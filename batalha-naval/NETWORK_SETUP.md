@@ -8,13 +8,13 @@ The Batalha Naval app now supports **WLAN (WiFi) multiplayer** allowing two play
 
 ### Automatic Room Pairing
 
-When two players enter **the same two names** (in any order) in the Lobby screen, they automatically join the same game room:
+When two players enter **the same two names** in the Lobby screen, they automatically join the same game room. Each player enters their OWN name in "Jogador 1" and the opponent's name in "Jogador 2":
 
-- **Player 1** enters: "Alice" and "Bob"
-- **Player 2** enters: "Bob" and "Alice"
+- **Alice's device** enters: "Alice" (Player 1) and "Bob" (Player 2)
+- **Bob's device** enters: "Bob" (Player 1) and "Alice" (Player 2)
 - Result: Both join room `room_alice_bob_<salt>`
 
-The room ID is deterministic (derived from sorted names + salt), so no manual room codes are needed!
+The room ID is deterministic (derived from sorted names + salt), so no manual room codes are needed! The app automatically maps each device to control the correct player based on alphabetical order.
 
 ### Game Flow
 
@@ -232,21 +232,23 @@ Then open on two devices using Expo Go or development build.
 
 ## Playing Multiplayer
 
-### Device 1:
+**Important:** Each player enters their OWN name in the "Jogador 1" field and the opponent's name in "Jogador 2".
+
+### Device 1 (Alice):
 1. Open the app
-2. Enter: Player 1 = "Alice", Player 2 = "Bob"
+2. Enter: Player 1 = "Alice" (your name), Player 2 = "Bob" (opponent's name)
 3. Press "Iniciar Jogo"
 4. Ships auto-placed → Press "Iniciar Jogo" again
 5. Wait for Device 2
 
-### Device 2:
+### Device 2 (Bob):
 1. Open the app
-2. Enter: Player 1 = "Bob", Player 2 = "Alice" (same names, any order!)
+2. Enter: Player 1 = "Bob" (your name), Player 2 = "Alice" (opponent's name)
 3. Press "Iniciar Jogo"
 4. Ships auto-placed → Press "Iniciar Jogo" again
 5. Game starts!
 
-Both devices will now be synchronized. When one player fires, the other sees the result!
+Both devices will now be synchronized. The app automatically maps each device to the correct player based on the name entered in "Jogador 1" field. Players are internally mapped by alphabetical order (Alice=player1, Bob=player2), ensuring both devices have consistent game state.
 
 ## Network Protocol
 

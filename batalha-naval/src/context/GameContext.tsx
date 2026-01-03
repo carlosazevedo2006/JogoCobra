@@ -81,25 +81,33 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   function createPlayers(player1Name: string, player2Name: string) {
     // IMPORTANTE: o nome no campo "Jogador 1" DESTE dispositivo é o jogador local
-    // Assim, este dispositivo controla 'player1'. No outro dispositivo, o campo "Jogador 1"
-    // deve ter o nome do outro jogador para que lá controlem 'player2'.
-    setMyPlayerId('player1');
+    // Mapeamos myPlayerId baseado em qual nome na lista ordenada corresponde ao player1Name local
+    const sortedNames = [player1Name.trim(), player2Name.trim()].sort();
+    const myNameIndex = sortedNames.indexOf(player1Name.trim());
+    const localPlayerId = myNameIndex === 0 ? 'player1' : 'player2';
+    
+    setMyPlayerId(localPlayerId);
 
+    // Em multiplayer, os IDs dos jogadores são consistentes baseados na ordem alfabética
+    // para que ambos os dispositivos tenham o mesmo mapeamento
     const player1: Player = {
       id: 'player1',
-      name: player1Name,
+      name: sortedNames[0],
       board: createEmptyBoard(),
       isReady: false,
     };
 
     const player2: Player = {
       id: 'player2',
-      name: player2Name,
+      name: sortedNames[1],
       board: createEmptyBoard(),
       isReady: false,
     };
 
     if (!multiplayer) {
+      // Em modo local, usamos os nomes na ordem digitada
+      player1.name = player1Name;
+      player2.name = player2Name;
       setGameState({
         players: [player1, player2],
         currentTurnPlayerId: player1.id,
@@ -123,8 +131,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       roomId,
       selfId: selfIdRef.current,
       playersRequested: [
-        { id: 'player1', name: player1Name },
-        { id: 'player2', name: player2Name },
+        { id: 'player1', name: sortedNames[0] },
+        { id: 'player2', name: sortedNames[1] },
       ],
     });
   }
